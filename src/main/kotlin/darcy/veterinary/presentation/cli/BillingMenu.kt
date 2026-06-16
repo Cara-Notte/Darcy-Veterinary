@@ -32,7 +32,7 @@ class BillingMenu(
             items = patientService.listPets(),
             emptyMessage = "No pets registered yet. Register a pet before creating an invoice.",
             prompt = "Select pet: ",
-            formatter = Pet::summary
+            formatter = { it.summary() }
         ) ?: return
 
         println("Available services:")
@@ -54,7 +54,7 @@ class BillingMenu(
             items = billingService.listInvoices().filter { it.paymentStatus == PaymentStatus.UNPAID },
             emptyMessage = "No unpaid invoices available.",
             prompt = "Select invoice: ",
-            formatter = Invoice::summary
+            formatter = { it.summary() }
         ) ?: return
 
         val paid = billingService.markAsPaid(invoice.id)
@@ -66,7 +66,7 @@ class BillingMenu(
             title = "Invoices",
             items = billingService.listInvoices(),
             emptyMessage = "No invoices created yet.",
-            formatter = Invoice::summary
+            formatter = { it.summary() }
         )
     }
 
