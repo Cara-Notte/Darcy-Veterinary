@@ -28,6 +28,21 @@ class AppointmentService(
         )
     }
 
+    fun rescheduleAppointment(id: String, scheduledAt: LocalDateTime, reason: String): Appointment {
+        require(reason.isNotBlank()) { "Appointment reason cannot be blank." }
+        val appointment = getAppointment(id)
+        if (appointment.status != AppointmentStatus.SCHEDULED) {
+            throw InvalidClinicOperationException("Only scheduled appointments can be rescheduled.")
+        }
+
+        return appointmentRepository.save(
+            appointment.copy(
+                scheduledAt = scheduledAt,
+                reason = reason.trim()
+            )
+        )
+    }
+
     fun completeAppointment(id: String): Appointment = changeStatus(id, AppointmentStatus.COMPLETED)
 
     fun cancelAppointment(id: String): Appointment = changeStatus(id, AppointmentStatus.CANCELLED)
