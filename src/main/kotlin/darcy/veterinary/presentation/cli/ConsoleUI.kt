@@ -51,6 +51,9 @@ class ConsoleUI(
                     4 -> billingMenu.show()
                     5 -> running = false
                 }
+            } catch (_: EndOfInputException) {
+                println("No console input is available. Exiting.")
+                running = false
             } catch (error: Exception) {
                 println("Error: ${error.message}")
             }
