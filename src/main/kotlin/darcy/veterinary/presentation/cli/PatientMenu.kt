@@ -16,15 +16,19 @@ class PatientMenu(
         println("\nPatient Management")
         println("1. Register owner")
         println("2. Register pet")
-        println("3. List owners")
-        println("4. List pets")
-        println("5. Search pets")
-        when (input.choice("Choose menu: ", 1..5)) {
+        println("3. Edit owner")
+        println("4. Edit pet")
+        println("5. List owners")
+        println("6. List pets")
+        println("7. Search pets")
+        when (input.choice("Choose menu: ", 1..7)) {
             1 -> registerOwner()
             2 -> registerPet()
-            3 -> listOwners()
-            4 -> listPets()
-            5 -> searchPets()
+            3 -> editOwner()
+            4 -> editPet()
+            5 -> listOwners()
+            6 -> listPets()
+            7 -> searchPets()
         }
     }
 
@@ -54,6 +58,43 @@ class PatientMenu(
             age = input.int("Age (optional): ", allowBlank = true)
         )
         println("Pet registered: ${pet.id} - ${pet.name}")
+    }
+
+    private fun editOwner() {
+        val owner = selector.choose(
+            title = "Owners",
+            items = ownerService.listOwners(),
+            emptyMessage = "No owners registered yet.",
+            prompt = "Select owner to edit: ",
+            formatter = { it.summary() }
+        ) ?: return
+
+        val updated = ownerService.updateOwner(
+            id = owner.id,
+            fullName = input.optionalText("Owner full name [${owner.fullName}]: ") ?: owner.fullName,
+            phoneNumber = input.optionalText("Phone number [${owner.phoneNumber}]: ") ?: owner.phoneNumber,
+            email = input.optionalText("Email [${owner.email.orEmpty()}]: ") ?: owner.email
+        )
+        println("Owner updated: ${updated.id} - ${updated.fullName}")
+    }
+
+    private fun editPet() {
+        val pet = selector.choose(
+            title = "Pets",
+            items = patientService.listPets(),
+            emptyMessage = "No pets registered yet.",
+            prompt = "Select pet to edit: ",
+            formatter = { it.summary() }
+        ) ?: return
+
+        val updated = patientService.updatePet(
+            id = pet.id,
+            name = input.optionalText("Pet name [${pet.name}]: ") ?: pet.name,
+            species = input.optionalText("Species [${pet.species}]: ") ?: pet.species,
+            breed = input.optionalText("Breed [${pet.breed.orEmpty()}]: ") ?: pet.breed,
+            age = input.int("Age [${pet.age ?: "blank"}]: ", allowBlank = true) ?: pet.age
+        )
+        println("Pet updated: ${updated.id} - ${updated.name}")
     }
 
     private fun listOwners() {
