@@ -18,8 +18,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 
-class CsvClinicStorage(private val dataDirectory: Path = Path.of("data")) {
-    fun saveAll(
+class CsvClinicStorage(private val dataDirectory: Path = Path.of("data")) : ClinicStorage {
+    override fun saveAll(
         ownerRepository: OwnerRepository,
         petRepository: PetRepository,
         appointmentRepository: AppointmentRepository,
@@ -44,7 +44,7 @@ class CsvClinicStorage(private val dataDirectory: Path = Path.of("data")) {
         })
     }
 
-    fun loadAll(
+    override fun loadAll(
         ownerRepository: OwnerRepository,
         petRepository: PetRepository,
         appointmentRepository: AppointmentRepository,
