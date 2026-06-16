@@ -137,7 +137,7 @@ class ClinicWorkflowTest {
         )
         val paid = app.billingService.markAsPaid(invoice.id)
 
-        assertEquals(350_000.0, invoice.total)
+        assertEquals(350_000.0, invoice.total())
         assertEquals(PaymentStatus.PAID, paid.paymentStatus)
     }
 
