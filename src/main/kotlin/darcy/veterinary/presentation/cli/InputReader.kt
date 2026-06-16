@@ -3,11 +3,13 @@ package darcy.veterinary.presentation.cli
 import java.time.LocalDateTime
 import java.time.format.DateTimeParseException
 
+class EndOfInputException : RuntimeException("No console input is available.")
+
 class InputReader {
     fun text(prompt: String): String {
         while (true) {
             print(prompt)
-            val value = readln().trim()
+            val value = readInputLine().trim()
             if (value.isNotBlank()) return value
             println("Input cannot be empty.")
         }
@@ -15,13 +17,13 @@ class InputReader {
 
     fun optionalText(prompt: String): String? {
         print(prompt)
-        return readln().trim().ifBlank { null }
+        return readInputLine().trim().ifBlank { null }
     }
 
     fun int(prompt: String, allowBlank: Boolean = false): Int? {
         while (true) {
             print(prompt)
-            val value = readln().trim()
+            val value = readInputLine().trim()
             if (allowBlank && value.isBlank()) return null
             val number = value.toIntOrNull()
             if (number != null) return number
@@ -47,4 +49,6 @@ class InputReader {
             }
         }
     }
+
+    private fun readInputLine(): String = readLine() ?: throw EndOfInputException()
 }
