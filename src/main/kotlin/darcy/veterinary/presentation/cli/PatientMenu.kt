@@ -43,7 +43,7 @@ class PatientMenu(
             items = ownerService.listOwners(),
             emptyMessage = "No owners registered yet. Register an owner before registering a pet.",
             prompt = "Select owner: ",
-            formatter = Owner::summary
+            formatter = { it.summary() }
         ) ?: return
 
         val pet = patientService.registerPet(
@@ -61,7 +61,7 @@ class PatientMenu(
             title = "Owners",
             items = ownerService.listOwners(),
             emptyMessage = "No owners registered yet.",
-            formatter = Owner::summary
+            formatter = { it.summary() }
         )
     }
 
@@ -70,7 +70,7 @@ class PatientMenu(
             title = "Pets",
             items = patientService.listPets(),
             emptyMessage = "No pets registered yet.",
-            formatter = Pet::summary
+            formatter = { it.summary() }
         )
     }
 
@@ -80,7 +80,7 @@ class PatientMenu(
             title = "Search results",
             items = patientService.searchPets(keyword),
             emptyMessage = "No pets matched '$keyword'.",
-            formatter = Pet::summary
+            formatter = { it.summary() }
         )
     }
 
