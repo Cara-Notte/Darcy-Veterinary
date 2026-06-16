@@ -2,12 +2,16 @@ package darcy.veterinary.presentation.cli
 
 import darcy.veterinary.application.OwnerService
 import darcy.veterinary.application.PatientService
+import darcy.veterinary.domain.model.Owner
+import darcy.veterinary.domain.model.Pet
 
 class PatientMenu(
     private val ownerService: OwnerService,
     private val patientService: PatientService,
     private val input: InputReader
 ) {
+    private val selector = CliListSelector(input)
+
     fun show() {
         println("\nPatient Management")
         println("1. Register owner")
@@ -34,8 +38,16 @@ class PatientMenu(
     }
 
     private fun registerPet() {
+        val owner = selector.choose(
+            title = "Available owners",
+            items = ownerService.listOwners(),
+            emptyMessage = "No owners registered yet. Register an owner before registering a pet.",
+            prompt = "Select owner: ",
+            formatter = Owner::summary
+        ) ?: return
+
         val pet = patientService.registerPet(
-            ownerId = input.text("Owner ID: "),
+            ownerId = owner.id,
             name = input.text("Pet name: "),
             species = input.text("Species: "),
             breed = input.optionalText("Breed (optional): "),
@@ -45,21 +57,34 @@ class PatientMenu(
     }
 
     private fun listOwners() {
-        ownerService.listOwners().forEach { owner ->
-            println("${owner.id} | ${owner.fullName} | ${owner.phoneNumber} | ${owner.email.orEmpty()}")
-        }
+        selector.show(
+            title = "Owners",
+            items = ownerService.listOwners(),
+            emptyMessage = "No owners registered yet.",
+            formatter = Owner::summary
+        )
     }
 
     private fun listPets() {
-        patientService.listPets().forEach { pet ->
-            println("${pet.id} | ${pet.name} | ${pet.species} | Owner: ${pet.ownerId}")
-        }
+        selector.show(
+            title = "Pets",
+            items = patientService.listPets(),
+            emptyMessage = "No pets registered yet.",
+            formatter = Pet::summary
+        )
     }
 
     private fun searchPets() {
         val keyword = input.text("Keyword: ")
-        patientService.searchPets(keyword).forEach { pet ->
-            println("${pet.id} | ${pet.name} | ${pet.species} | Owner: ${pet.ownerId}")
-        }
+        selector.show(
+            title = "Search results",
+            items = patientService.searchPets(keyword),
+            emptyMessage = "No pets matched '$keyword'.",
+            formatter = Pet::summary
+        )
     }
+
+    private fun Owner.summary(): String = "$id | $fullName | $phoneNumber | ${email.orEmpty()}"
+
+    private fun Pet.summary(): String = "$id | $name | $species | Owner: $ownerId"
 }
