@@ -16,14 +16,16 @@ class AppointmentMenu(
     fun show() {
         println("\nAppointment Management")
         println("1. Schedule appointment")
-        println("2. Complete appointment")
-        println("3. Cancel appointment")
-        println("4. List appointments")
-        when (input.choice("Choose menu: ", 1..4)) {
+        println("2. Reschedule appointment")
+        println("3. Complete appointment")
+        println("4. Cancel appointment")
+        println("5. List appointments")
+        when (input.choice("Choose menu: ", 1..5)) {
             1 -> schedule()
-            2 -> complete()
-            3 -> cancel()
-            4 -> list()
+            2 -> reschedule()
+            3 -> complete()
+            4 -> cancel()
+            5 -> list()
         }
     }
 
@@ -42,6 +44,23 @@ class AppointmentMenu(
             reason = input.text("Reason: ")
         )
         println("Appointment scheduled: ${appointment.id}")
+    }
+
+    private fun reschedule() {
+        val appointment = selector.choose(
+            title = "Scheduled appointments",
+            items = appointmentService.listAppointments().filter { it.status == AppointmentStatus.SCHEDULED },
+            emptyMessage = "No scheduled appointments available to reschedule.",
+            prompt = "Select appointment: ",
+            formatter = { it.summary() }
+        ) ?: return
+
+        val updated = appointmentService.rescheduleAppointment(
+            id = appointment.id,
+            scheduledAt = input.dateTime("New scheduled time (YYYY-MM-DDTHH:MM): "),
+            reason = input.optionalText("Reason [${appointment.reason}]: ") ?: appointment.reason
+        )
+        println("Appointment rescheduled: ${updated.id}")
     }
 
     private fun complete() {
