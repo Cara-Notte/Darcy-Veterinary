@@ -1,6 +1,6 @@
 # Darcy Veterinary
 
-Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, appointment scheduling, medical records, service-based billing, and local file persistence.
+Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, appointment scheduling, medical records, service-based billing, and local JSON persistence.
 
 ## Features
 
@@ -9,8 +9,8 @@ Darcy Veterinary is a Kotlin console application for managing veterinary clinic 
 - Schedule, complete, and cancel appointments.
 - Record diagnosis, treatment, and visit notes.
 - Generate invoices from clinic services and mark invoices as paid.
-- Save and reload clinic data from local CSV files.
-- Run automated tests for core clinic workflows.
+- Save and reload clinic data from local JSON files.
+- Run automated tests for core clinic workflows and storage behavior.
 
 ## Project structure
 
@@ -48,7 +48,9 @@ src/
 │   │   ├── seed/
 │   │   │   └── SampleDataSeeder.kt
 │   │   └── storage/
-│   │       └── CsvClinicStorage.kt
+│   │       ├── ClinicStorage.kt
+│   │       ├── CsvClinicStorage.kt
+│   │       └── JsonClinicStorage.kt
 │   ├── presentation/
 │   │   └── cli/
 │   │       ├── AppointmentMenu.kt
@@ -65,7 +67,8 @@ src/
 │       └── RecordRepository.kt
 └── test/kotlin/darcy/veterinary/
     ├── ClinicWorkflowTest.kt
-    └── CsvClinicStorageTest.kt
+    ├── CsvClinicStorageTest.kt
+    └── JsonClinicStorageTest.kt
 ```
 
 ## Requirements
@@ -78,15 +81,27 @@ Gradle is configured to use a Java 17 toolchain and can provision one automatica
 ## Run
 
 ```bash
-gradle run
+./gradlew run
+```
+
+On Windows:
+
+```powershell
+.\gradlew.bat run
 ```
 
 ## Test
 
 ```bash
-gradle test
+./gradlew test
+```
+
+On Windows:
+
+```powershell
+.\gradlew.bat test
 ```
 
 ## Data storage
 
-Runtime data is saved under the `data/` directory. The directory is ignored by Git so local clinic records do not get committed accidentally.
+Runtime data is saved under the `data/` directory. The CLI uses `clinic-data.json` by default so clinical notes and names can safely contain punctuation and line breaks. The `data/` directory is ignored by Git so local clinic records do not get committed accidentally.
