@@ -6,6 +6,7 @@ out/
 *.jar
 
 # Local runtime data
+data/
 patients.csv
 
 # IDE
