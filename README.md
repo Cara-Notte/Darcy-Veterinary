@@ -1,18 +1,19 @@
 # Darcy Veterinary
 
-Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, appointment scheduling, medical records, service-based billing, selectable CLI records, empty-list feedback, and local JSON persistence.
+Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, appointment scheduling, medical records, service-based billing, selectable CLI records, correction workflows, empty-list feedback, and local JSON persistence.
 
 ## Features
 
-- Register owners and pet patients.
+- Register and edit owners.
+- Register and edit pet patients.
 - Search owners and patients.
-- Schedule, complete, and cancel appointments.
-- Record diagnosis, treatment, and visit notes.
-- Generate invoices from clinic services and mark invoices as paid.
-- Select owners, pets, appointments, and invoices from numbered CLI lists instead of typing IDs manually.
+- Schedule, reschedule, complete, and cancel appointments.
+- Record and correct diagnosis, treatment, and visit notes.
+- Generate invoices from clinic services, mark invoices as paid, and void unpaid invoices.
+- Select owners, pets, appointments, records, and invoices from numbered CLI lists instead of typing IDs manually.
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
 - Save and reload clinic data from local JSON files.
-- Run automated tests for core clinic workflows, storage behavior, and CLI list rendering.
+- Run automated tests for core clinic workflows, correction workflows, storage behavior, and CLI list rendering.
 
 ## Project structure
 
@@ -71,6 +72,7 @@ src/
 │       └── RecordRepository.kt
 └── test/kotlin/darcy/veterinary/
     ├── CliListFormatterTest.kt
+    ├── ClinicCorrectionWorkflowTest.kt
     ├── ClinicWorkflowTest.kt
     ├── CsvClinicStorageTest.kt
     └── JsonClinicStorageTest.kt
