@@ -33,7 +33,7 @@ class CsvClinicStorageTest {
 
         val owner = ownerService.registerOwner("Raka Wijaya", "0844444444")
         val pet = patientService.registerPet(owner.id, "Luna", "Cat")
-        billingService.createInvoice(pet.id, listOf(ClinicService.GROOMING, ClinicService.MEDICATION))
+        billingService.createInvoice(pet.id, listOf(ClinicService.GROOMING, ClinicService.BASIC_TREATMENT))
 
         CsvClinicStorage(directory).saveAll(
             ownerRepository,
@@ -61,6 +61,6 @@ class CsvClinicStorageTest {
         assertEquals("Raka Wijaya", loadedOwners.findAll().first().fullName)
         assertEquals(1, loadedPets.findAll().size)
         assertEquals("Luna", loadedPets.findAll().first().name)
-        assertEquals(225_000.0, loadedInvoices.findAll().first().total)
+        assertEquals(225_000.0, loadedInvoices.findAll().first().total())
     }
 }
