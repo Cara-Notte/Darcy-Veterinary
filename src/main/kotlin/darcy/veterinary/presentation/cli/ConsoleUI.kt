@@ -28,9 +28,9 @@ class ConsoleUI(
     private val input: InputReader = InputReader()
 ) {
     private val patientMenu = PatientMenu(ownerService, patientService, input)
-    private val appointmentMenu = AppointmentMenu(appointmentService, input)
-    private val medicalRecordMenu = MedicalRecordMenu(medicalRecordService, input)
-    private val billingMenu = BillingMenu(billingService, input)
+    private val appointmentMenu = AppointmentMenu(appointmentService, patientService, input)
+    private val medicalRecordMenu = MedicalRecordMenu(medicalRecordService, patientService, appointmentService, input)
+    private val billingMenu = BillingMenu(billingService, patientService, input)
 
     fun start() {
         storage.loadAll(ownerRepository, petRepository, appointmentRepository, medicalRecordRepository, invoiceRepository)
