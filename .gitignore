@@ -1,0 +1,18 @@
+# Kotlin / Gradle
+.gradle/
+build/
+out/
+*.class
+*.jar
+
+# Local runtime data
+patients.csv
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
