@@ -31,7 +31,7 @@ class MedicalRecordMenu(
             items = patientService.listPets(),
             emptyMessage = "No pets registered yet. Register a pet before creating a medical record.",
             prompt = "Select pet: ",
-            formatter = Pet::summary
+            formatter = { it.summary() }
         ) ?: return
 
         val appointment = selector.chooseOptional(
@@ -39,7 +39,7 @@ class MedicalRecordMenu(
             items = appointmentService.listAppointmentsByPet(pet.id),
             emptyMessage = "No appointments found for this pet. The record will not be linked to an appointment.",
             prompt = "Select appointment or 0: ",
-            formatter = Appointment::summary
+            formatter = { it.summary() }
         )
 
         val record = medicalRecordService.createRecord(
@@ -57,7 +57,7 @@ class MedicalRecordMenu(
             title = "Medical records",
             items = medicalRecordService.listRecords(),
             emptyMessage = "No medical records created yet.",
-            formatter = MedicalRecord::summary
+            formatter = { it.summary() }
         )
     }
 
