@@ -5,7 +5,8 @@ import darcy.veterinary.application.BillingService
 import darcy.veterinary.application.MedicalRecordService
 import darcy.veterinary.application.OwnerService
 import darcy.veterinary.application.PatientService
-import darcy.veterinary.infrastructure.storage.CsvClinicStorage
+import darcy.veterinary.infrastructure.storage.ClinicStorage
+import darcy.veterinary.infrastructure.storage.JsonClinicStorage
 import darcy.veterinary.repository.AppointmentRepository
 import darcy.veterinary.repository.InvoiceRepository
 import darcy.veterinary.repository.MedicalRecordRepository
@@ -23,7 +24,7 @@ class ConsoleUI(
     private val appointmentService: AppointmentService,
     private val medicalRecordService: MedicalRecordService,
     private val billingService: BillingService,
-    private val storage: CsvClinicStorage = CsvClinicStorage(),
+    private val storage: ClinicStorage = JsonClinicStorage(),
     private val input: InputReader = InputReader()
 ) {
     private val patientMenu = PatientMenu(ownerService, patientService, input)
