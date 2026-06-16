@@ -22,8 +22,11 @@ jobs:
           java-version: 17
           cache: gradle
 
+      - name: Normalize Gradle wrapper line endings
+        run: python -c "from pathlib import Path; p = Path('gradlew'); p.write_bytes(p.read_bytes().replace(b'\\r\\n', b'\\n'))"
+
       - name: Make Gradle wrapper executable
         run: chmod +x gradlew
 
       - name: Run tests
-        run: ./gradlew clean test
+        run: ./gradlew --no-daemon clean test --stacktrace
