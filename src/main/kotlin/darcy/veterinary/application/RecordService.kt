@@ -21,9 +21,7 @@ class MedicalRecordService(
         appointmentId: String? = null,
         recordedAt: LocalDateTime = LocalDateTime.now()
     ): MedicalRecord {
-        require(diagnosis.isNotBlank()) { "Diagnosis cannot be blank." }
-        require(treatment.isNotBlank()) { "Treatment cannot be blank." }
-
+        validateRecord(diagnosis, treatment)
         petRepository.findById(petId)
             ?: throw EntityNotFoundException("Pet with ID $petId was not found.")
 
@@ -44,7 +42,28 @@ class MedicalRecordService(
         )
     }
 
+    fun updateRecord(id: String, diagnosis: String, treatment: String, notes: String): MedicalRecord {
+        validateRecord(diagnosis, treatment)
+        val existing = getRecord(id)
+
+        return medicalRecordRepository.save(
+            existing.copy(
+                diagnosis = diagnosis.trim(),
+                treatment = treatment.trim(),
+                notes = notes.trim()
+            )
+        )
+    }
+
+    fun getRecord(id: String): MedicalRecord = medicalRecordRepository.findById(id)
+        ?: throw EntityNotFoundException("Medical record with ID $id was not found.")
+
     fun listRecords(): List<MedicalRecord> = medicalRecordRepository.findAll()
 
     fun listRecordsByPet(petId: String): List<MedicalRecord> = medicalRecordRepository.findByPetId(petId)
+
+    private fun validateRecord(diagnosis: String, treatment: String) {
+        require(diagnosis.isNotBlank()) { "Diagnosis cannot be blank." }
+        require(treatment.isNotBlank()) { "Treatment cannot be blank." }
+    }
 }
