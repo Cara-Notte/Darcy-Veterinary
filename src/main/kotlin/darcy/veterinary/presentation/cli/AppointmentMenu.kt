@@ -33,7 +33,7 @@ class AppointmentMenu(
             items = patientService.listPets(),
             emptyMessage = "No pets registered yet. Register a pet before scheduling an appointment.",
             prompt = "Select pet: ",
-            formatter = Pet::summary
+            formatter = { it.summary() }
         ) ?: return
 
         val appointment = appointmentService.scheduleAppointment(
@@ -50,7 +50,7 @@ class AppointmentMenu(
             items = appointmentService.listAppointments().filter { it.status == AppointmentStatus.SCHEDULED },
             emptyMessage = "No scheduled appointments available to complete.",
             prompt = "Select appointment: ",
-            formatter = Appointment::summary
+            formatter = { it.summary() }
         ) ?: return
 
         val completed = appointmentService.completeAppointment(appointment.id)
@@ -63,7 +63,7 @@ class AppointmentMenu(
             items = appointmentService.listAppointments().filter { it.status == AppointmentStatus.SCHEDULED },
             emptyMessage = "No scheduled appointments available to cancel.",
             prompt = "Select appointment: ",
-            formatter = Appointment::summary
+            formatter = { it.summary() }
         ) ?: return
 
         val cancelled = appointmentService.cancelAppointment(appointment.id)
@@ -75,7 +75,7 @@ class AppointmentMenu(
             title = "Appointments",
             items = appointmentService.listAppointments(),
             emptyMessage = "No appointments scheduled yet.",
-            formatter = Appointment::summary
+            formatter = { it.summary() }
         )
     }
 
