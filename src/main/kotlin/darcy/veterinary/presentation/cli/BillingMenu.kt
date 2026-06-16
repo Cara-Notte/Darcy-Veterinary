@@ -18,11 +18,13 @@ class BillingMenu(
         println("\nBilling")
         println("1. Create invoice")
         println("2. Mark invoice as paid")
-        println("3. List invoices")
-        when (input.choice("Choose menu: ", 1..3)) {
+        println("3. Void invoice")
+        println("4. List invoices")
+        when (input.choice("Choose menu: ", 1..4)) {
             1 -> create()
             2 -> markPaid()
-            3 -> list()
+            3 -> void()
+            4 -> list()
         }
     }
 
@@ -59,6 +61,19 @@ class BillingMenu(
 
         val paid = billingService.markAsPaid(invoice.id)
         println("Invoice marked as paid: ${paid.id}")
+    }
+
+    private fun void() {
+        val invoice = selector.choose(
+            title = "Voidable invoices",
+            items = billingService.listInvoices().filter { it.paymentStatus == PaymentStatus.UNPAID },
+            emptyMessage = "No unpaid invoices available to void.",
+            prompt = "Select invoice: ",
+            formatter = { it.summary() }
+        ) ?: return
+
+        val voided = billingService.voidInvoice(invoice.id)
+        println("Invoice voided: ${voided.id}")
     }
 
     private fun list() {
