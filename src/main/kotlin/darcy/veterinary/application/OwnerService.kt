@@ -13,12 +13,27 @@ class OwnerService(
         require(fullName.isNotBlank()) { "Owner name cannot be blank." }
         require(phoneNumber.isNotBlank()) { "Phone number cannot be blank." }
 
-        val duplicate = ownerRepository.findAll().any { it.phoneNumber == phoneNumber.trim() }
-        if (duplicate) throw DuplicateEntityException("Owner phone number already exists.")
+        ensurePhoneNumberIsUnique(phoneNumber.trim())
 
         return ownerRepository.save(
             Owner(
                 id = idGenerator.nextId("OWN"),
+                fullName = fullName.trim(),
+                phoneNumber = phoneNumber.trim(),
+                email = email?.trim()?.ifBlank { null }
+            )
+        )
+    }
+
+    fun updateOwner(id: String, fullName: String, phoneNumber: String, email: String? = null): Owner {
+        require(fullName.isNotBlank()) { "Owner name cannot be blank." }
+        require(phoneNumber.isNotBlank()) { "Phone number cannot be blank." }
+        getOwner(id)
+        ensurePhoneNumberIsUnique(phoneNumber.trim(), ignoredOwnerId = id)
+
+        return ownerRepository.save(
+            Owner(
+                id = id,
                 fullName = fullName.trim(),
                 phoneNumber = phoneNumber.trim(),
                 email = email?.trim()?.ifBlank { null }
@@ -32,4 +47,11 @@ class OwnerService(
     fun listOwners(): List<Owner> = ownerRepository.findAll()
 
     fun searchOwners(keyword: String): List<Owner> = ownerRepository.search(keyword)
+
+    private fun ensurePhoneNumberIsUnique(phoneNumber: String, ignoredOwnerId: String? = null) {
+        val duplicate = ownerRepository.findAll().any { owner ->
+            owner.phoneNumber == phoneNumber && owner.id != ignoredOwnerId
+        }
+        if (duplicate) throw DuplicateEntityException("Owner phone number already exists.")
+    }
 }
