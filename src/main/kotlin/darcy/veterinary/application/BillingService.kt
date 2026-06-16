@@ -35,11 +35,25 @@ class BillingService(
     }
 
     fun markAsPaid(invoiceId: String): Invoice {
-        val invoice = invoiceRepository.findById(invoiceId)
-            ?: throw EntityNotFoundException("Invoice with ID $invoiceId was not found.")
+        val invoice = getInvoice(invoiceId)
+        if (invoice.paymentStatus == PaymentStatus.VOIDED) {
+            throw InvalidClinicOperationException("Voided invoices cannot be marked as paid.")
+        }
 
         return invoiceRepository.save(invoice.copy(paymentStatus = PaymentStatus.PAID))
     }
+
+    fun voidInvoice(invoiceId: String): Invoice {
+        val invoice = getInvoice(invoiceId)
+        if (invoice.paymentStatus == PaymentStatus.PAID) {
+            throw InvalidClinicOperationException("Paid invoices cannot be voided.")
+        }
+
+        return invoiceRepository.save(invoice.copy(paymentStatus = PaymentStatus.VOIDED))
+    }
+
+    fun getInvoice(invoiceId: String): Invoice = invoiceRepository.findById(invoiceId)
+        ?: throw EntityNotFoundException("Invoice with ID $invoiceId was not found.")
 
     fun listInvoices(): List<Invoice> = invoiceRepository.findAll()
 
