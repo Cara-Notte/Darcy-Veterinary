@@ -18,10 +18,12 @@ class MedicalRecordMenu(
     fun show() {
         println("\nMedical Records")
         println("1. Create record")
-        println("2. List records")
-        when (input.choice("Choose menu: ", 1..2)) {
+        println("2. Edit record")
+        println("3. List records")
+        when (input.choice("Choose menu: ", 1..3)) {
             1 -> create()
-            2 -> list()
+            2 -> edit()
+            3 -> list()
         }
     }
 
@@ -50,6 +52,24 @@ class MedicalRecordMenu(
             notes = input.optionalText("Notes: ").orEmpty()
         )
         println("Medical record created: ${record.id}")
+    }
+
+    private fun edit() {
+        val record = selector.choose(
+            title = "Medical records",
+            items = medicalRecordService.listRecords(),
+            emptyMessage = "No medical records created yet.",
+            prompt = "Select record to edit: ",
+            formatter = { it.summary() }
+        ) ?: return
+
+        val updated = medicalRecordService.updateRecord(
+            id = record.id,
+            diagnosis = input.optionalText("Diagnosis [${record.diagnosis}]: ") ?: record.diagnosis,
+            treatment = input.optionalText("Treatment [${record.treatment}]: ") ?: record.treatment,
+            notes = input.optionalText("Notes [leave blank to keep current]: ") ?: record.notes
+        )
+        println("Medical record updated: ${updated.id}")
     }
 
     private fun list() {
