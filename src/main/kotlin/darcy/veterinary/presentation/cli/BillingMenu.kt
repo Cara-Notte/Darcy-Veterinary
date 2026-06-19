@@ -4,6 +4,7 @@ import darcy.veterinary.application.BillingService
 import darcy.veterinary.application.PatientService
 import darcy.veterinary.domain.model.ClinicService
 import darcy.veterinary.domain.model.Invoice
+import darcy.veterinary.domain.model.InvoiceStatusHistory
 import darcy.veterinary.domain.model.PaymentStatus
 import darcy.veterinary.domain.model.Pet
 
@@ -19,12 +20,14 @@ class BillingMenu(
         println("1. Create invoice")
         println("2. Mark invoice as paid")
         println("3. Void invoice")
-        println("4. List invoices")
-        when (input.choice("Choose menu: ", 1..4)) {
+        println("4. View invoice status history")
+        println("5. List invoices")
+        when (input.choice("Choose menu: ", 1..5)) {
             1 -> create()
             2 -> markPaid()
             3 -> void()
-            4 -> list()
+            4 -> viewHistory()
+            5 -> list()
         }
     }
 
@@ -76,6 +79,23 @@ class BillingMenu(
         println("Invoice voided: ${voided.id}")
     }
 
+    private fun viewHistory() {
+        val invoice = selector.choose(
+            title = "Invoices",
+            items = billingService.listInvoices(),
+            emptyMessage = "No invoices created yet.",
+            prompt = "Select invoice: ",
+            formatter = { it.summary() }
+        ) ?: return
+
+        selector.show(
+            title = "Status history for ${invoice.id}",
+            items = billingService.listStatusHistory(invoice.id),
+            emptyMessage = "No status history recorded for this invoice.",
+            formatter = { it.summary() }
+        )
+    }
+
     private fun list() {
         selector.show(
             title = "Invoices",
@@ -88,4 +108,6 @@ class BillingMenu(
     private fun Pet.summary(): String = "$id | $name | $species | Owner: $ownerId"
 
     private fun Invoice.summary(): String = "$id | Pet: $petId | Rp ${total().toInt()} | $paymentStatus"
+
+    private fun InvoiceStatusHistory.summary(): String = "$id | ${fromStatus ?: "NONE"} -> $toStatus | $changedAt | $reason"
 }
