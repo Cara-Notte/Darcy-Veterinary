@@ -2,8 +2,10 @@ package darcy.veterinary.application
 
 import darcy.veterinary.domain.exception.EntityNotFoundException
 import darcy.veterinary.domain.model.Pet
+import darcy.veterinary.domain.model.PetSex
 import darcy.veterinary.repository.OwnerRepository
 import darcy.veterinary.repository.PetRepository
+import java.time.LocalDate
 
 class PatientService(
     private val petRepository: PetRepository,
@@ -15,9 +17,14 @@ class PatientService(
         name: String,
         species: String,
         breed: String? = null,
-        age: Int? = null
+        age: Int? = null,
+        sex: PetSex? = null,
+        dateOfBirth: LocalDate? = null,
+        weightKg: Double? = null,
+        allergies: List<String> = emptyList(),
+        medicalConditions: List<String> = emptyList()
     ): Pet {
-        validatePetProfile(name, species, age)
+        validatePetProfile(name, species, age, weightKg)
         ownerRepository.findById(ownerId)
             ?: throw EntityNotFoundException("Owner with ID $ownerId was not found.")
 
@@ -28,13 +35,29 @@ class PatientService(
                 name = name.trim(),
                 species = species.trim(),
                 breed = breed?.trim()?.ifBlank { null },
-                age = age
+                age = age,
+                sex = sex,
+                dateOfBirth = dateOfBirth,
+                weightKg = weightKg,
+                allergies = cleanList(allergies),
+                medicalConditions = cleanList(medicalConditions)
             )
         )
     }
 
-    fun updatePet(id: String, name: String, species: String, breed: String? = null, age: Int? = null): Pet {
-        validatePetProfile(name, species, age)
+    fun updatePet(
+        id: String,
+        name: String,
+        species: String,
+        breed: String? = null,
+        age: Int? = null,
+        sex: PetSex? = null,
+        dateOfBirth: LocalDate? = null,
+        weightKg: Double? = null,
+        allergies: List<String> = emptyList(),
+        medicalConditions: List<String> = emptyList()
+    ): Pet {
+        validatePetProfile(name, species, age, weightKg)
         val existing = getPet(id)
 
         return petRepository.save(
@@ -42,7 +65,12 @@ class PatientService(
                 name = name.trim(),
                 species = species.trim(),
                 breed = breed?.trim()?.ifBlank { null },
-                age = age
+                age = age,
+                sex = sex,
+                dateOfBirth = dateOfBirth,
+                weightKg = weightKg,
+                allergies = cleanList(allergies),
+                medicalConditions = cleanList(medicalConditions)
             )
         )
     }
@@ -56,9 +84,12 @@ class PatientService(
 
     fun searchPets(keyword: String): List<Pet> = petRepository.search(keyword)
 
-    private fun validatePetProfile(name: String, species: String, age: Int?) {
+    private fun validatePetProfile(name: String, species: String, age: Int?, weightKg: Double?) {
         require(name.isNotBlank()) { "Pet name cannot be blank." }
         require(species.isNotBlank()) { "Species cannot be blank." }
         require(age == null || age >= 0) { "Age cannot be negative." }
+        require(weightKg == null || weightKg > 0.0) { "Weight must be greater than zero." }
     }
+
+    private fun cleanList(values: List<String>): List<String> = values.map(String::trim).filter(String::isNotBlank)
 }
