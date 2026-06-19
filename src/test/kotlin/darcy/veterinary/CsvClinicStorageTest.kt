@@ -40,7 +40,9 @@ class CsvClinicStorageTest {
             petRepository,
             appointmentRepository,
             medicalRecordRepository,
-            invoiceRepository
+            invoiceRepository,
+            null,
+            null
         )
 
         val loadedOwners = InMemoryOwnerRepository()
@@ -54,7 +56,9 @@ class CsvClinicStorageTest {
             loadedPets,
             loadedAppointments,
             loadedRecords,
-            loadedInvoices
+            loadedInvoices,
+            null,
+            null
         )
 
         assertEquals(1, loadedOwners.findAll().size)
