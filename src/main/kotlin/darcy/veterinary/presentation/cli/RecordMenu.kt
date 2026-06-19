@@ -52,7 +52,8 @@ class MedicalRecordMenu(
             appointmentId = appointment?.id,
             diagnosis = input.text("Diagnosis: "),
             treatment = input.text("Treatment: "),
-            notes = input.optionalText("Notes: ").orEmpty()
+            notes = input.optionalText("Notes: ").orEmpty(),
+            veterinarianName = input.optionalText("Veterinarian name (optional): ")
         )
         println("Medical record created: ${record.id}")
     }
@@ -70,7 +71,8 @@ class MedicalRecordMenu(
             id = record.id,
             diagnosis = input.optionalText("Diagnosis [${record.diagnosis}]: ") ?: record.diagnosis,
             treatment = input.optionalText("Treatment [${record.treatment}]: ") ?: record.treatment,
-            notes = input.optionalText("Notes [leave blank to keep current]: ") ?: record.notes
+            notes = input.optionalText("Notes [leave blank to keep current]: ") ?: record.notes,
+            veterinarianName = input.optionalText("Veterinarian [${record.veterinarianName.orEmpty()}]: ") ?: record.veterinarianName
         )
         println("Medical record updated: ${updated.id}")
     }
@@ -103,9 +105,9 @@ class MedicalRecordMenu(
 
     private fun Pet.summary(): String = "$id | $name | $species | Owner: $ownerId"
 
-    private fun Appointment.summary(): String = "$id | Pet: $petId | $scheduledAt | $status | $reason"
+    private fun Appointment.summary(): String = "$id | Pet: $petId | $scheduledAt | $status | $visitType | Vet: ${veterinarianName.orEmpty()} | $reason"
 
-    private fun MedicalRecord.summary(): String = "$id | Pet: $petId | $diagnosis | $recordedAt"
+    private fun MedicalRecord.summary(): String = "$id | Pet: $petId | Vet: ${veterinarianName.orEmpty()} | $diagnosis | $recordedAt"
 
     private fun MedicalRecordRevision.summary(): String = "$id | Changed: $changedAt | Previous diagnosis: $diagnosis"
 }
