@@ -39,6 +39,15 @@ class InputReader {
         }
     }
 
+    fun confirm(prompt: String): Boolean {
+        while (true) {
+            print("$prompt (y/n): ")
+            val parsed = CliConfirmation.parse(readInputLine())
+            if (parsed != null) return parsed
+            println("Enter y or n.")
+        }
+    }
+
     fun dateTime(prompt: String): LocalDateTime {
         while (true) {
             val value = text(prompt)
