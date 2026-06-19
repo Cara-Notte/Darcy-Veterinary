@@ -1,14 +1,14 @@
 # Darcy Veterinary
 
-Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, empty-list feedback, and local JSON persistence.
+Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, richer veterinary profiles, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, empty-list feedback, and local JSON persistence.
 
 ## Features
 
 - Register and edit owners.
-- Register and edit pet patients.
+- Register and edit pet patients with sex, date of birth, weight, allergies, and medical conditions.
 - Search owners and patients.
-- Schedule, reschedule, complete, and cancel appointments.
-- Record and correct diagnosis, treatment, and visit notes.
+- Schedule, reschedule, complete, and cancel appointments with visit type and veterinarian name.
+- Record and correct diagnosis, treatment, visit notes, and veterinarian name.
 - Keep previous medical-record values when records are corrected.
 - Generate invoices from clinic services, mark invoices as paid, and void unpaid invoices.
 - Keep invoice status changes for creation, payment, and voiding.
@@ -16,46 +16,7 @@ Darcy Veterinary is a Kotlin console application for managing veterinary clinic 
 - Select owners, pets, appointments, records, and invoices from numbered CLI lists instead of typing IDs manually.
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
 - Save and reload clinic data from local JSON files.
-- Run automated tests for core workflows, correction workflows, change history, reports, storage behavior, and CLI list rendering.
-
-## Project structure
-
-```text
-src/
-├── main/kotlin/darcy/veterinary/
-│   ├── Main.kt
-│   ├── application/
-│   │   ├── AppointmentService.kt
-│   │   ├── BillingService.kt
-│   │   ├── ClinicReportService.kt
-│   │   ├── IdGenerator.kt
-│   │   ├── OwnerService.kt
-│   │   ├── PatientService.kt
-│   │   └── RecordService.kt
-│   ├── domain/model/
-│   │   ├── Appointment.kt
-│   │   ├── Invoice.kt
-│   │   ├── InvoiceStatusHistory.kt
-│   │   ├── MedicalRecord.kt
-│   │   ├── MedicalRecordRevision.kt
-│   │   ├── Owner.kt
-│   │   └── Pet.kt
-│   ├── infrastructure/
-│   │   ├── memory/
-│   │   ├── seed/
-│   │   └── storage/
-│   ├── presentation/cli/
-│   │   ├── AppointmentMenu.kt
-│   │   ├── BillingMenu.kt
-│   │   ├── PatientMenu.kt
-│   │   ├── RecordMenu.kt
-│   │   └── ReportMenu.kt
-│   └── repository/
-└── test/kotlin/darcy/veterinary/
-    ├── AuditTrailTest.kt
-    ├── ClinicReportServiceTest.kt
-    └── workflow and storage tests
-```
+- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, storage behavior, and CLI list rendering.
 
 ## Requirements
 
@@ -90,4 +51,4 @@ On Windows:
 
 ## Data storage
 
-Runtime data is saved under the `data/` directory. The CLI uses `clinic-data.json` by default so clinical notes, change history, invoice status changes, and names can safely contain punctuation and line breaks. The `data/` directory is ignored by Git so local clinic records do not get committed accidentally.
+Runtime data is saved under the `data/` directory. The CLI uses `clinic-data.json` by default so clinical notes, richer veterinary fields, change history, invoice status changes, and names can safely contain punctuation and line breaks. The `data/` directory is ignored by Git so local clinic records do not get committed accidentally.
