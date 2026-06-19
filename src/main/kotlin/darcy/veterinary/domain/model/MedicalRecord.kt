@@ -9,5 +9,6 @@ data class MedicalRecord(
     val diagnosis: String,
     val treatment: String,
     val notes: String,
-    val recordedAt: LocalDateTime
+    val recordedAt: LocalDateTime,
+    val veterinarianName: String? = null
 )
