@@ -77,6 +77,14 @@ class CsvClinicStorage(private val dataDirectory: Path = Path.of("data")) : Clin
         }
     }
 
+    fun saveLegacy(
+        ownerRepository: OwnerRepository,
+        petRepository: PetRepository,
+        appointmentRepository: AppointmentRepository,
+        medicalRecordRepository: MedicalRecordRepository,
+        invoiceRepository: InvoiceRepository
+    ) = saveAll(ownerRepository, petRepository, appointmentRepository, medicalRecordRepository, invoiceRepository, null, null)
+
     private fun writeLines(fileName: String, records: List<String>) {
         Files.write(dataDirectory.resolve(fileName), records)
     }
