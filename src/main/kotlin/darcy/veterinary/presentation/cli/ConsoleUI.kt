@@ -2,6 +2,7 @@ package darcy.veterinary.presentation.cli
 
 import darcy.veterinary.application.AppointmentService
 import darcy.veterinary.application.BillingService
+import darcy.veterinary.application.ClinicReportService
 import darcy.veterinary.application.MedicalRecordService
 import darcy.veterinary.application.OwnerService
 import darcy.veterinary.application.PatientService
@@ -28,6 +29,7 @@ class ConsoleUI(
     private val appointmentService: AppointmentService,
     private val medicalRecordService: MedicalRecordService,
     private val billingService: BillingService,
+    private val reportService: ClinicReportService,
     private val storage: ClinicStorage = JsonClinicStorage(),
     private val input: InputReader = InputReader()
 ) {
@@ -35,6 +37,7 @@ class ConsoleUI(
     private val appointmentMenu = AppointmentMenu(appointmentService, patientService, input)
     private val medicalRecordMenu = MedicalRecordMenu(medicalRecordService, patientService, appointmentService, input)
     private val billingMenu = BillingMenu(billingService, patientService, input)
+    private val reportMenu = ReportMenu(reportService, input)
 
     fun start() {
         storage.loadAll(
@@ -56,13 +59,15 @@ class ConsoleUI(
                 println("2. Appointments")
                 println("3. Medical records")
                 println("4. Billing")
-                println("5. Save and exit")
-                when (input.choice("Choose menu: ", 1..5)) {
+                println("5. Reports")
+                println("6. Save and exit")
+                when (input.choice("Choose menu: ", 1..6)) {
                     1 -> patientMenu.show()
                     2 -> appointmentMenu.show()
                     3 -> medicalRecordMenu.show()
                     4 -> billingMenu.show()
-                    5 -> running = false
+                    5 -> reportMenu.show()
+                    6 -> running = false
                 }
             } catch (_: EndOfInputException) {
                 println("No console input is available. Exiting.")
