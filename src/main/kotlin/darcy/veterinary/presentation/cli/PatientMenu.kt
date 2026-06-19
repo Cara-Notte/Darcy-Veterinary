@@ -4,6 +4,8 @@ import darcy.veterinary.application.OwnerService
 import darcy.veterinary.application.PatientService
 import darcy.veterinary.domain.model.Owner
 import darcy.veterinary.domain.model.Pet
+import darcy.veterinary.domain.model.PetSex
+import java.time.LocalDate
 
 class PatientMenu(
     private val ownerService: OwnerService,
@@ -55,7 +57,12 @@ class PatientMenu(
             name = input.text("Pet name: "),
             species = input.text("Species: "),
             breed = input.optionalText("Breed (optional): "),
-            age = input.int("Age (optional): ", allowBlank = true)
+            age = input.int("Age (optional): ", allowBlank = true),
+            sex = readSex("Sex (MALE/FEMALE/UNKNOWN, optional): "),
+            dateOfBirth = readDate("Date of birth (YYYY-MM-DD, optional): "),
+            weightKg = readDouble("Weight in kg (optional): "),
+            allergies = readCommaList("Allergies, separated by comma (optional): "),
+            medicalConditions = readCommaList("Medical conditions, separated by comma (optional): ")
         )
         println("Pet registered: ${pet.id} - ${pet.name}")
     }
@@ -92,7 +99,12 @@ class PatientMenu(
             name = input.optionalText("Pet name [${pet.name}]: ") ?: pet.name,
             species = input.optionalText("Species [${pet.species}]: ") ?: pet.species,
             breed = input.optionalText("Breed [${pet.breed.orEmpty()}]: ") ?: pet.breed,
-            age = input.int("Age [${pet.age ?: "blank"}]: ", allowBlank = true) ?: pet.age
+            age = input.int("Age [${pet.age ?: "blank"}]: ", allowBlank = true) ?: pet.age,
+            sex = readSex("Sex [${pet.sex ?: "blank"}]: ") ?: pet.sex,
+            dateOfBirth = readDate("Date of birth [${pet.dateOfBirth ?: "blank"}]: ") ?: pet.dateOfBirth,
+            weightKg = readDouble("Weight kg [${pet.weightKg ?: "blank"}]: ") ?: pet.weightKg,
+            allergies = readCommaList("Allergies [${pet.allergies.joinToString(", ")}]: ").ifEmpty { pet.allergies },
+            medicalConditions = readCommaList("Medical conditions [${pet.medicalConditions.joinToString(", ")}]: ").ifEmpty { pet.medicalConditions }
         )
         println("Pet updated: ${updated.id} - ${updated.name}")
     }
@@ -125,7 +137,33 @@ class PatientMenu(
         )
     }
 
+    private fun readSex(prompt: String): PetSex? {
+        val value = input.optionalText(prompt) ?: return null
+        return runCatching { PetSex.valueOf(value.trim().uppercase()) }.getOrElse {
+            println("Unknown sex value. Keeping blank.")
+            null
+        }
+    }
+
+    private fun readDate(prompt: String): LocalDate? {
+        val value = input.optionalText(prompt) ?: return null
+        return runCatching { LocalDate.parse(value.trim()) }.getOrElse {
+            println("Invalid date. Keeping blank.")
+            null
+        }
+    }
+
+    private fun readDouble(prompt: String): Double? {
+        val value = input.optionalText(prompt) ?: return null
+        return value.toDoubleOrNull().also {
+            if (it == null) println("Invalid decimal number. Keeping blank.")
+        }
+    }
+
+    private fun readCommaList(prompt: String): List<String> =
+        input.optionalText(prompt)?.split(",")?.map(String::trim)?.filter(String::isNotBlank).orEmpty()
+
     private fun Owner.summary(): String = "$id | $fullName | $phoneNumber | ${email.orEmpty()}"
 
-    private fun Pet.summary(): String = "$id | $name | $species | Owner: $ownerId"
+    private fun Pet.summary(): String = "$id | $name | $species | ${sex ?: "UNKNOWN"} | ${weightKg?.let { "$it kg" } ?: "no weight"} | Owner: $ownerId"
 }
