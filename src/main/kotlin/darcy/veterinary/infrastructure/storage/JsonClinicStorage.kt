@@ -5,13 +5,17 @@ import darcy.veterinary.domain.model.AppointmentStatus
 import darcy.veterinary.domain.model.ClinicService
 import darcy.veterinary.domain.model.Invoice
 import darcy.veterinary.domain.model.InvoiceItem
+import darcy.veterinary.domain.model.InvoiceStatusHistory
 import darcy.veterinary.domain.model.MedicalRecord
+import darcy.veterinary.domain.model.MedicalRecordRevision
 import darcy.veterinary.domain.model.Owner
 import darcy.veterinary.domain.model.PaymentStatus
 import darcy.veterinary.domain.model.Pet
 import darcy.veterinary.repository.AppointmentRepository
 import darcy.veterinary.repository.InvoiceRepository
+import darcy.veterinary.repository.InvoiceStatusHistoryRepository
 import darcy.veterinary.repository.MedicalRecordRepository
+import darcy.veterinary.repository.MedicalRecordRevisionRepository
 import darcy.veterinary.repository.OwnerRepository
 import darcy.veterinary.repository.PetRepository
 import java.nio.file.Files
@@ -36,7 +40,9 @@ class JsonClinicStorage(
         petRepository: PetRepository,
         appointmentRepository: AppointmentRepository,
         medicalRecordRepository: MedicalRecordRepository,
-        invoiceRepository: InvoiceRepository
+        invoiceRepository: InvoiceRepository,
+        revisionRepository: MedicalRecordRevisionRepository?,
+        invoiceHistoryRepository: InvoiceStatusHistoryRepository?
     ) {
         Files.createDirectories(dataDirectory)
         val snapshot = ClinicSnapshot(
@@ -44,7 +50,9 @@ class JsonClinicStorage(
             pets = petRepository.findAll().map { it.toDto() },
             appointments = appointmentRepository.findAll().map { it.toDto() },
             records = medicalRecordRepository.findAll().map { it.toDto() },
-            invoices = invoiceRepository.findAll().map { it.toDto() }
+            invoices = invoiceRepository.findAll().map { it.toDto() },
+            recordRevisions = revisionRepository?.findAll()?.map { it.toDto() }.orEmpty(),
+            invoiceStatusHistory = invoiceHistoryRepository?.findAll()?.map { it.toDto() }.orEmpty()
         )
         Files.writeString(dataDirectory.resolve(fileName), json.encodeToString(snapshot))
     }
@@ -54,7 +62,9 @@ class JsonClinicStorage(
         petRepository: PetRepository,
         appointmentRepository: AppointmentRepository,
         medicalRecordRepository: MedicalRecordRepository,
-        invoiceRepository: InvoiceRepository
+        invoiceRepository: InvoiceRepository,
+        revisionRepository: MedicalRecordRevisionRepository?,
+        invoiceHistoryRepository: InvoiceStatusHistoryRepository?
     ) {
         val file = dataDirectory.resolve(fileName)
         if (!Files.exists(file)) return
@@ -65,6 +75,8 @@ class JsonClinicStorage(
         snapshot.appointments.map(AppointmentDto::toDomain).forEach(appointmentRepository::save)
         snapshot.records.map(MedicalRecordDto::toDomain).forEach(medicalRecordRepository::save)
         snapshot.invoices.map(InvoiceDto::toDomain).forEach(invoiceRepository::save)
+        snapshot.recordRevisions.map(MedicalRecordRevisionDto::toDomain).forEach { revisionRepository?.save(it) }
+        snapshot.invoiceStatusHistory.map(InvoiceStatusHistoryDto::toDomain).forEach { invoiceHistoryRepository?.save(it) }
     }
 
     private fun Owner.toDto() = OwnerDto(id, fullName, phoneNumber, email)
@@ -72,6 +84,8 @@ class JsonClinicStorage(
     private fun Appointment.toDto() = AppointmentDto(id, petId, scheduledAt.toString(), reason, status.name)
     private fun MedicalRecord.toDto() = MedicalRecordDto(id, petId, appointmentId, diagnosis, treatment, notes, recordedAt.toString())
     private fun Invoice.toDto() = InvoiceDto(id, petId, issuedAt.toString(), paymentStatus.name, items.map { it.service.name })
+    private fun MedicalRecordRevision.toDto() = MedicalRecordRevisionDto(id, recordId, diagnosis, treatment, notes, changedAt.toString())
+    private fun InvoiceStatusHistory.toDto() = InvoiceStatusHistoryDto(id, invoiceId, fromStatus?.name, toStatus.name, changedAt.toString(), reason)
 
     @Serializable
     private data class ClinicSnapshot(
@@ -79,7 +93,9 @@ class JsonClinicStorage(
         val pets: List<PetDto> = emptyList(),
         val appointments: List<AppointmentDto> = emptyList(),
         val records: List<MedicalRecordDto> = emptyList(),
-        val invoices: List<InvoiceDto> = emptyList()
+        val invoices: List<InvoiceDto> = emptyList(),
+        val recordRevisions: List<MedicalRecordRevisionDto> = emptyList(),
+        val invoiceStatusHistory: List<InvoiceStatusHistoryDto> = emptyList()
     )
 
     @Serializable
@@ -142,6 +158,37 @@ class JsonClinicStorage(
             items = services.mapNotNull(ClinicService::fromCode).map { InvoiceItem(it) },
             issuedAt = LocalDateTime.parse(issuedAt),
             paymentStatus = PaymentStatus.valueOf(paymentStatus)
+        )
+    }
+
+    @Serializable
+    private data class MedicalRecordRevisionDto(
+        val id: String,
+        val recordId: String,
+        val diagnosis: String,
+        val treatment: String,
+        val notes: String,
+        val changedAt: String
+    ) {
+        fun toDomain() = MedicalRecordRevision(id, recordId, diagnosis, treatment, notes, LocalDateTime.parse(changedAt))
+    }
+
+    @Serializable
+    private data class InvoiceStatusHistoryDto(
+        val id: String,
+        val invoiceId: String,
+        val fromStatus: String? = null,
+        val toStatus: String,
+        val changedAt: String,
+        val reason: String
+    ) {
+        fun toDomain() = InvoiceStatusHistory(
+            id = id,
+            invoiceId = invoiceId,
+            fromStatus = fromStatus?.let(PaymentStatus::valueOf),
+            toStatus = PaymentStatus.valueOf(toStatus),
+            changedAt = LocalDateTime.parse(changedAt),
+            reason = reason
         )
     }
 }
