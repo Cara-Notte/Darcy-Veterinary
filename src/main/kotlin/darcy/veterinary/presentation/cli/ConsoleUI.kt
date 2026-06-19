@@ -9,7 +9,9 @@ import darcy.veterinary.infrastructure.storage.ClinicStorage
 import darcy.veterinary.infrastructure.storage.JsonClinicStorage
 import darcy.veterinary.repository.AppointmentRepository
 import darcy.veterinary.repository.InvoiceRepository
+import darcy.veterinary.repository.InvoiceStatusHistoryRepository
 import darcy.veterinary.repository.MedicalRecordRepository
+import darcy.veterinary.repository.MedicalRecordRevisionRepository
 import darcy.veterinary.repository.OwnerRepository
 import darcy.veterinary.repository.PetRepository
 
@@ -19,6 +21,8 @@ class ConsoleUI(
     private val appointmentRepository: AppointmentRepository,
     private val medicalRecordRepository: MedicalRecordRepository,
     private val invoiceRepository: InvoiceRepository,
+    private val medicalRecordRevisionRepository: MedicalRecordRevisionRepository? = null,
+    private val invoiceStatusHistoryRepository: InvoiceStatusHistoryRepository? = null,
     private val ownerService: OwnerService,
     private val patientService: PatientService,
     private val appointmentService: AppointmentService,
@@ -33,7 +37,15 @@ class ConsoleUI(
     private val billingMenu = BillingMenu(billingService, patientService, input)
 
     fun start() {
-        storage.loadAll(ownerRepository, petRepository, appointmentRepository, medicalRecordRepository, invoiceRepository)
+        storage.loadAll(
+            ownerRepository,
+            petRepository,
+            appointmentRepository,
+            medicalRecordRepository,
+            invoiceRepository,
+            medicalRecordRevisionRepository,
+            invoiceStatusHistoryRepository
+        )
         println("Darcy Veterinary Clinic Management")
 
         var running = true
@@ -60,7 +72,15 @@ class ConsoleUI(
             }
         }
 
-        storage.saveAll(ownerRepository, petRepository, appointmentRepository, medicalRecordRepository, invoiceRepository)
+        storage.saveAll(
+            ownerRepository,
+            petRepository,
+            appointmentRepository,
+            medicalRecordRepository,
+            invoiceRepository,
+            medicalRecordRevisionRepository,
+            invoiceStatusHistoryRepository
+        )
         println("Data saved. Goodbye.")
     }
 }
