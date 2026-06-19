@@ -5,6 +5,7 @@ import darcy.veterinary.application.PatientService
 import darcy.veterinary.domain.model.Appointment
 import darcy.veterinary.domain.model.AppointmentStatus
 import darcy.veterinary.domain.model.Pet
+import darcy.veterinary.domain.model.VisitType
 
 class AppointmentMenu(
     private val appointmentService: AppointmentService,
@@ -41,7 +42,9 @@ class AppointmentMenu(
         val appointment = appointmentService.scheduleAppointment(
             petId = pet.id,
             scheduledAt = input.dateTime("Scheduled at (YYYY-MM-DDTHH:MM): "),
-            reason = input.text("Reason: ")
+            reason = input.text("Reason: "),
+            visitType = readVisitType("Visit type ${VisitType.entries.joinToString()} (optional): ") ?: VisitType.GENERAL,
+            veterinarianName = input.optionalText("Veterinarian name (optional): ")
         )
         println("Appointment scheduled: ${appointment.id}")
     }
@@ -58,7 +61,9 @@ class AppointmentMenu(
         val updated = appointmentService.rescheduleAppointment(
             id = appointment.id,
             scheduledAt = input.dateTime("New scheduled time (YYYY-MM-DDTHH:MM): "),
-            reason = input.optionalText("Reason [${appointment.reason}]: ") ?: appointment.reason
+            reason = input.optionalText("Reason [${appointment.reason}]: ") ?: appointment.reason,
+            visitType = readVisitType("Visit type [${appointment.visitType}]: ") ?: appointment.visitType,
+            veterinarianName = input.optionalText("Veterinarian [${appointment.veterinarianName.orEmpty()}]: ") ?: appointment.veterinarianName
         )
         println("Appointment rescheduled: ${updated.id}")
     }
@@ -98,7 +103,15 @@ class AppointmentMenu(
         )
     }
 
+    private fun readVisitType(prompt: String): VisitType? {
+        val value = input.optionalText(prompt) ?: return null
+        return runCatching { VisitType.valueOf(value.trim().uppercase()) }.getOrElse {
+            println("Unknown visit type. Using current/default value.")
+            null
+        }
+    }
+
     private fun Pet.summary(): String = "$id | $name | $species | Owner: $ownerId"
 
-    private fun Appointment.summary(): String = "$id | Pet: $petId | $scheduledAt | $status | $reason"
+    private fun Appointment.summary(): String = "$id | Pet: $petId | $scheduledAt | $status | $visitType | Vet: ${veterinarianName.orEmpty()} | $reason"
 }
