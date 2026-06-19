@@ -1,6 +1,6 @@
 # Darcy Veterinary
 
-Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, appointment scheduling, medical records, service-based billing, selectable CLI records, correction workflows, empty-list feedback, and local JSON persistence.
+Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, empty-list feedback, and local JSON persistence.
 
 ## Features
 
@@ -9,11 +9,14 @@ Darcy Veterinary is a Kotlin console application for managing veterinary clinic 
 - Search owners and patients.
 - Schedule, reschedule, complete, and cancel appointments.
 - Record and correct diagnosis, treatment, and visit notes.
+- Keep previous medical-record values when records are corrected.
 - Generate invoices from clinic services, mark invoices as paid, and void unpaid invoices.
+- Keep invoice status changes for creation, payment, and voiding.
+- Show clinic overview reports for owners, pets, appointments, invoices, and paid revenue.
 - Select owners, pets, appointments, records, and invoices from numbered CLI lists instead of typing IDs manually.
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
 - Save and reload clinic data from local JSON files.
-- Run automated tests for core clinic workflows, correction workflows, storage behavior, and CLI list rendering.
+- Run automated tests for core workflows, correction workflows, change history, reports, storage behavior, and CLI list rendering.
 
 ## Project structure
 
@@ -24,58 +27,34 @@ src/
 │   ├── application/
 │   │   ├── AppointmentService.kt
 │   │   ├── BillingService.kt
+│   │   ├── ClinicReportService.kt
 │   │   ├── IdGenerator.kt
 │   │   ├── OwnerService.kt
 │   │   ├── PatientService.kt
 │   │   └── RecordService.kt
-│   ├── domain/
-│   │   ├── exception/
-│   │   │   └── ClinicErrors.kt
-│   │   └── model/
-│   │       ├── Appointment.kt
-│   │       ├── AppointmentStatus.kt
-│   │       ├── ClinicService.kt
-│   │       ├── Invoice.kt
-│   │       ├── InvoiceItem.kt
-│   │       ├── MedicalRecord.kt
-│   │       ├── Owner.kt
-│   │       ├── PaymentStatus.kt
-│   │       └── Pet.kt
+│   ├── domain/model/
+│   │   ├── Appointment.kt
+│   │   ├── Invoice.kt
+│   │   ├── InvoiceStatusHistory.kt
+│   │   ├── MedicalRecord.kt
+│   │   ├── MedicalRecordRevision.kt
+│   │   ├── Owner.kt
+│   │   └── Pet.kt
 │   ├── infrastructure/
 │   │   ├── memory/
-│   │   │   ├── InMemoryAppointmentRepository.kt
-│   │   │   ├── InMemoryInvoiceRepository.kt
-│   │   │   ├── InMemoryOwnerRepository.kt
-│   │   │   ├── InMemoryPetRepository.kt
-│   │   │   └── InMemoryRecordRepository.kt
 │   │   ├── seed/
-│   │   │   └── SampleDataSeeder.kt
 │   │   └── storage/
-│   │       ├── ClinicStorage.kt
-│   │       ├── CsvClinicStorage.kt
-│   │       └── JsonClinicStorage.kt
-│   ├── presentation/
-│   │   └── cli/
-│   │       ├── AppointmentMenu.kt
-│   │       ├── BillingMenu.kt
-│   │       ├── CliListFormatter.kt
-│   │       ├── CliListSelector.kt
-│   │       ├── ConsoleUI.kt
-│   │       ├── InputReader.kt
-│   │       ├── PatientMenu.kt
-│   │       └── RecordMenu.kt
+│   ├── presentation/cli/
+│   │   ├── AppointmentMenu.kt
+│   │   ├── BillingMenu.kt
+│   │   ├── PatientMenu.kt
+│   │   ├── RecordMenu.kt
+│   │   └── ReportMenu.kt
 │   └── repository/
-│       ├── AppointmentRepository.kt
-│       ├── InvoiceRepository.kt
-│       ├── OwnerRepository.kt
-│       ├── PetRepository.kt
-│       └── RecordRepository.kt
 └── test/kotlin/darcy/veterinary/
-    ├── CliListFormatterTest.kt
-    ├── ClinicCorrectionWorkflowTest.kt
-    ├── ClinicWorkflowTest.kt
-    ├── CsvClinicStorageTest.kt
-    └── JsonClinicStorageTest.kt
+    ├── AuditTrailTest.kt
+    ├── ClinicReportServiceTest.kt
+    └── workflow and storage tests
 ```
 
 ## Requirements
@@ -111,4 +90,4 @@ On Windows:
 
 ## Data storage
 
-Runtime data is saved under the `data/` directory. The CLI uses `clinic-data.json` by default so clinical notes and names can safely contain punctuation and line breaks. The `data/` directory is ignored by Git so local clinic records do not get committed accidentally.
+Runtime data is saved under the `data/` directory. The CLI uses `clinic-data.json` by default so clinical notes, change history, invoice status changes, and names can safely contain punctuation and line breaks. The `data/` directory is ignored by Git so local clinic records do not get committed accidentally.
