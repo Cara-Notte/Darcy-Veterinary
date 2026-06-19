@@ -1,6 +1,7 @@
 package darcy.veterinary.application
 
 import darcy.veterinary.domain.exception.EntityNotFoundException
+import darcy.veterinary.domain.exception.InvalidClinicOperationException
 import darcy.veterinary.domain.model.MedicalRecord
 import darcy.veterinary.domain.model.MedicalRecordRevision
 import darcy.veterinary.repository.AppointmentRepository
@@ -29,8 +30,12 @@ class MedicalRecordService(
         petRepository.findById(petId)
             ?: throw EntityNotFoundException("Pet with ID $petId was not found.")
 
-        if (appointmentId != null && appointmentRepository.findById(appointmentId) == null) {
-            throw EntityNotFoundException("Appointment with ID $appointmentId was not found.")
+        if (appointmentId != null) {
+            val appointment = appointmentRepository.findById(appointmentId)
+                ?: throw EntityNotFoundException("Appointment with ID $appointmentId was not found.")
+            if (appointment.petId != petId) {
+                throw InvalidClinicOperationException("Medical record appointment must belong to the same pet.")
+            }
         }
 
         return medicalRecordRepository.save(
