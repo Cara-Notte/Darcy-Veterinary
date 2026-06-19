@@ -10,9 +10,11 @@ class ReportMenu(
 ) {
     fun show() {
         println("\nReports")
+        println("0. Back")
         println("1. Show today's overview")
         println("2. Show overview for another date")
-        when (input.choice("Choose menu: ", 1..2)) {
+        when (input.choice("Choose menu: ", 0..2)) {
+            0 -> return
             1 -> printReport(reportService.generateOverview())
             2 -> printReport(reportService.generateOverview(readDate()))
         }
