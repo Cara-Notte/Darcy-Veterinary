@@ -159,8 +159,10 @@ class ClinicEdgeCaseTest {
         val medicalRecordService: MedicalRecordService,
         val billingService: BillingService
     ) {
+        private var petCounter = 0
+
         fun registerPet(name: String) = patientService.registerPet(
-            ownerId = ownerService.registerOwner("Owner for $name", "08${name.hashCode().toString().filter(Char::isDigit).take(8).padEnd(8, '0')}").id,
+            ownerId = ownerService.registerOwner("Owner for $name", "08900000${petCounter++}").id,
             name = name,
             species = "Dog"
         )
