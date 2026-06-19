@@ -55,7 +55,9 @@ class JsonClinicStorageTest {
             petRepository,
             appointmentRepository,
             medicalRecordRepository,
-            invoiceRepository
+            invoiceRepository,
+            null,
+            null
         )
 
         val loadedOwners = InMemoryOwnerRepository()
@@ -69,7 +71,9 @@ class JsonClinicStorageTest {
             loadedPets,
             loadedAppointments,
             loadedRecords,
-            loadedInvoices
+            loadedInvoices,
+            null,
+            null
         )
 
         assertEquals("Rani; Santoso", loadedOwners.findAll().first().fullName)
