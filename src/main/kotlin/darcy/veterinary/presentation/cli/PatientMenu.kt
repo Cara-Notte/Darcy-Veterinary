@@ -16,6 +16,7 @@ class PatientMenu(
 
     fun show() {
         println("\nPatient Management")
+        println("0. Back")
         println("1. Register owner")
         println("2. Register pet")
         println("3. Edit owner")
@@ -23,7 +24,8 @@ class PatientMenu(
         println("5. List owners")
         println("6. List pets")
         println("7. Search pets")
-        when (input.choice("Choose menu: ", 1..7)) {
+        when (input.choice("Choose menu: ", 0..7)) {
+            0 -> return
             1 -> registerOwner()
             2 -> registerPet()
             3 -> editOwner()
@@ -46,7 +48,7 @@ class PatientMenu(
     private fun registerPet() {
         val owner = selector.choose(
             title = "Available owners",
-            items = ownerService.listOwners(),
+            items = sortedOwners(),
             emptyMessage = "No owners registered yet. Register an owner before registering a pet.",
             prompt = "Select owner: ",
             formatter = { it.summary() }
@@ -70,7 +72,7 @@ class PatientMenu(
     private fun editOwner() {
         val owner = selector.choose(
             title = "Owners",
-            items = ownerService.listOwners(),
+            items = sortedOwners(),
             emptyMessage = "No owners registered yet.",
             prompt = "Select owner to edit: ",
             formatter = { it.summary() }
@@ -88,7 +90,7 @@ class PatientMenu(
     private fun editPet() {
         val pet = selector.choose(
             title = "Pets",
-            items = patientService.listPets(),
+            items = sortedPets(),
             emptyMessage = "No pets registered yet.",
             prompt = "Select pet to edit: ",
             formatter = { it.summary() }
@@ -112,7 +114,7 @@ class PatientMenu(
     private fun listOwners() {
         selector.show(
             title = "Owners",
-            items = ownerService.listOwners(),
+            items = sortedOwners(),
             emptyMessage = "No owners registered yet.",
             formatter = { it.summary() }
         )
@@ -121,7 +123,7 @@ class PatientMenu(
     private fun listPets() {
         selector.show(
             title = "Pets",
-            items = patientService.listPets(),
+            items = sortedPets(),
             emptyMessage = "No pets registered yet.",
             formatter = { it.summary() }
         )
@@ -131,11 +133,15 @@ class PatientMenu(
         val keyword = input.text("Keyword: ")
         selector.show(
             title = "Search results",
-            items = patientService.searchPets(keyword),
+            items = patientService.searchPets(keyword).sortedBy { it.name.lowercase() },
             emptyMessage = "No pets matched '$keyword'.",
             formatter = { it.summary() }
         )
     }
+
+    private fun sortedOwners(): List<Owner> = ownerService.listOwners().sortedBy { it.fullName.lowercase() }
+
+    private fun sortedPets(): List<Pet> = patientService.listPets().sortedBy { it.name.lowercase() }
 
     private fun readSex(prompt: String): PetSex? {
         val value = input.optionalText(prompt) ?: return null
