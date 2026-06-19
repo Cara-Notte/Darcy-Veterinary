@@ -1,6 +1,6 @@
 # Darcy Veterinary
 
-Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, richer veterinary profiles, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, empty-list feedback, and local JSON persistence.
+Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, richer veterinary profiles, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, safer menu navigation, empty-list feedback, and local JSON persistence.
 
 ## Features
 
@@ -8,15 +8,18 @@ Darcy Veterinary is a Kotlin console application for managing veterinary clinic 
 - Register and edit pet patients with sex, date of birth, weight, allergies, and medical conditions.
 - Search owners and patients.
 - Schedule, reschedule, complete, and cancel appointments with visit type and veterinarian name.
+- Require confirmation before completing or cancelling appointments.
 - Record and correct diagnosis, treatment, visit notes, and veterinarian name.
 - Keep previous medical-record values when records are corrected.
 - Generate invoices from clinic services, mark invoices as paid, and void unpaid invoices.
+- Require confirmation before payment and invoice void actions.
 - Keep invoice status changes for creation, payment, and voiding.
 - Show clinic overview reports for owners, pets, appointments, invoices, and paid revenue.
 - Select owners, pets, appointments, records, and invoices from numbered CLI lists instead of typing IDs manually.
+- Use `0. Back` options in submenus.
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
 - Save and reload clinic data from local JSON files.
-- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, storage behavior, and CLI list rendering.
+- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, and CLI list rendering.
 
 ## Requirements
 
