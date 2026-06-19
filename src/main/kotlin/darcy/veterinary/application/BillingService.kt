@@ -5,15 +5,18 @@ import darcy.veterinary.domain.exception.InvalidClinicOperationException
 import darcy.veterinary.domain.model.ClinicService
 import darcy.veterinary.domain.model.Invoice
 import darcy.veterinary.domain.model.InvoiceItem
+import darcy.veterinary.domain.model.InvoiceStatusHistory
 import darcy.veterinary.domain.model.PaymentStatus
 import darcy.veterinary.repository.InvoiceRepository
+import darcy.veterinary.repository.InvoiceStatusHistoryRepository
 import darcy.veterinary.repository.PetRepository
 import java.time.LocalDateTime
 
 class BillingService(
     private val invoiceRepository: InvoiceRepository,
     private val petRepository: PetRepository,
-    private val idGenerator: IdGenerator = UuidIdGenerator
+    private val idGenerator: IdGenerator = UuidIdGenerator,
+    private val statusHistoryRepository: InvoiceStatusHistoryRepository? = null
 ) {
     fun createInvoice(
         petId: String,
@@ -24,7 +27,7 @@ class BillingService(
         petRepository.findById(petId)
             ?: throw EntityNotFoundException("Pet with ID $petId was not found.")
 
-        return invoiceRepository.save(
+        val invoice = invoiceRepository.save(
             Invoice(
                 id = idGenerator.nextId("INV"),
                 petId = petId,
@@ -32,6 +35,8 @@ class BillingService(
                 issuedAt = issuedAt
             )
         )
+        recordStatusChange(invoice.id, null, invoice.paymentStatus, "Invoice created")
+        return invoice
     }
 
     fun markAsPaid(invoiceId: String): Invoice {
@@ -40,7 +45,9 @@ class BillingService(
             throw InvalidClinicOperationException("Voided invoices cannot be marked as paid.")
         }
 
-        return invoiceRepository.save(invoice.copy(paymentStatus = PaymentStatus.PAID))
+        val paid = invoiceRepository.save(invoice.copy(paymentStatus = PaymentStatus.PAID))
+        recordStatusChange(invoice.id, invoice.paymentStatus, PaymentStatus.PAID, "Invoice paid")
+        return paid
     }
 
     fun voidInvoice(invoiceId: String): Invoice {
@@ -49,7 +56,9 @@ class BillingService(
             throw InvalidClinicOperationException("Paid invoices cannot be voided.")
         }
 
-        return invoiceRepository.save(invoice.copy(paymentStatus = PaymentStatus.VOIDED))
+        val voided = invoiceRepository.save(invoice.copy(paymentStatus = PaymentStatus.VOIDED))
+        recordStatusChange(invoice.id, invoice.paymentStatus, PaymentStatus.VOIDED, "Invoice voided")
+        return voided
     }
 
     fun getInvoice(invoiceId: String): Invoice = invoiceRepository.findById(invoiceId)
@@ -58,4 +67,25 @@ class BillingService(
     fun listInvoices(): List<Invoice> = invoiceRepository.findAll()
 
     fun listInvoicesByPet(petId: String): List<Invoice> = invoiceRepository.findByPetId(petId)
+
+    fun listStatusHistory(invoiceId: String): List<InvoiceStatusHistory> =
+        statusHistoryRepository?.findByInvoiceId(invoiceId) ?: emptyList()
+
+    private fun recordStatusChange(
+        invoiceId: String,
+        fromStatus: PaymentStatus?,
+        toStatus: PaymentStatus,
+        reason: String
+    ) {
+        statusHistoryRepository?.save(
+            InvoiceStatusHistory(
+                id = idGenerator.nextId("HIS"),
+                invoiceId = invoiceId,
+                fromStatus = fromStatus,
+                toStatus = toStatus,
+                changedAt = LocalDateTime.now(),
+                reason = reason
+            )
+        )
+    }
 }
