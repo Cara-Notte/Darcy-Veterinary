@@ -11,6 +11,8 @@ import darcy.veterinary.domain.model.MedicalRecordRevision
 import darcy.veterinary.domain.model.Owner
 import darcy.veterinary.domain.model.PaymentStatus
 import darcy.veterinary.domain.model.Pet
+import darcy.veterinary.domain.model.PetSex
+import darcy.veterinary.domain.model.VisitType
 import darcy.veterinary.repository.AppointmentRepository
 import darcy.veterinary.repository.InvoiceRepository
 import darcy.veterinary.repository.InvoiceStatusHistoryRepository
@@ -20,6 +22,7 @@ import darcy.veterinary.repository.OwnerRepository
 import darcy.veterinary.repository.PetRepository
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -80,9 +83,21 @@ class JsonClinicStorage(
     }
 
     private fun Owner.toDto() = OwnerDto(id, fullName, phoneNumber, email)
-    private fun Pet.toDto() = PetDto(id, ownerId, name, species, breed, age)
-    private fun Appointment.toDto() = AppointmentDto(id, petId, scheduledAt.toString(), reason, status.name)
-    private fun MedicalRecord.toDto() = MedicalRecordDto(id, petId, appointmentId, diagnosis, treatment, notes, recordedAt.toString())
+    private fun Pet.toDto() = PetDto(
+        id = id,
+        ownerId = ownerId,
+        name = name,
+        species = species,
+        breed = breed,
+        age = age,
+        sex = sex?.name,
+        dateOfBirth = dateOfBirth?.toString(),
+        weightKg = weightKg,
+        allergies = allergies,
+        medicalConditions = medicalConditions
+    )
+    private fun Appointment.toDto() = AppointmentDto(id, petId, scheduledAt.toString(), reason, status.name, visitType.name, veterinarianName)
+    private fun MedicalRecord.toDto() = MedicalRecordDto(id, petId, appointmentId, diagnosis, treatment, notes, recordedAt.toString(), veterinarianName)
     private fun Invoice.toDto() = InvoiceDto(id, petId, issuedAt.toString(), paymentStatus.name, items.map { it.service.name })
     private fun MedicalRecordRevision.toDto() = MedicalRecordRevisionDto(id, recordId, diagnosis, treatment, notes, changedAt.toString())
     private fun InvoiceStatusHistory.toDto() = InvoiceStatusHistoryDto(id, invoiceId, fromStatus?.name, toStatus.name, changedAt.toString(), reason)
@@ -115,9 +130,26 @@ class JsonClinicStorage(
         val name: String,
         val species: String,
         val breed: String? = null,
-        val age: Int? = null
+        val age: Int? = null,
+        val sex: String? = null,
+        val dateOfBirth: String? = null,
+        val weightKg: Double? = null,
+        val allergies: List<String> = emptyList(),
+        val medicalConditions: List<String> = emptyList()
     ) {
-        fun toDomain() = Pet(id, ownerId, name, species, breed, age)
+        fun toDomain() = Pet(
+            id = id,
+            ownerId = ownerId,
+            name = name,
+            species = species,
+            breed = breed,
+            age = age,
+            sex = sex?.let(PetSex::valueOf),
+            dateOfBirth = dateOfBirth?.let(LocalDate::parse),
+            weightKg = weightKg,
+            allergies = allergies,
+            medicalConditions = medicalConditions
+        )
     }
 
     @Serializable
@@ -126,9 +158,19 @@ class JsonClinicStorage(
         val petId: String,
         val scheduledAt: String,
         val reason: String,
-        val status: String
+        val status: String,
+        val visitType: String = VisitType.GENERAL.name,
+        val veterinarianName: String? = null
     ) {
-        fun toDomain() = Appointment(id, petId, LocalDateTime.parse(scheduledAt), reason, AppointmentStatus.valueOf(status))
+        fun toDomain() = Appointment(
+            id = id,
+            petId = petId,
+            scheduledAt = LocalDateTime.parse(scheduledAt),
+            reason = reason,
+            status = AppointmentStatus.valueOf(status),
+            visitType = VisitType.valueOf(visitType),
+            veterinarianName = veterinarianName
+        )
     }
 
     @Serializable
@@ -139,9 +181,10 @@ class JsonClinicStorage(
         val diagnosis: String,
         val treatment: String,
         val notes: String,
-        val recordedAt: String
+        val recordedAt: String,
+        val veterinarianName: String? = null
     ) {
-        fun toDomain() = MedicalRecord(id, petId, appointmentId, diagnosis, treatment, notes, LocalDateTime.parse(recordedAt))
+        fun toDomain() = MedicalRecord(id, petId, appointmentId, diagnosis, treatment, notes, LocalDateTime.parse(recordedAt), veterinarianName)
     }
 
     @Serializable
