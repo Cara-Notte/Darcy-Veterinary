@@ -18,11 +18,13 @@ class MedicalRecordMenu(
 
     fun show() {
         println("\nMedical Records")
+        println("0. Back")
         println("1. Create record")
         println("2. Edit record")
         println("3. View record revision history")
         println("4. List records")
-        when (input.choice("Choose menu: ", 1..4)) {
+        when (input.choice("Choose menu: ", 0..4)) {
+            0 -> return
             1 -> create()
             2 -> edit()
             3 -> viewHistory()
@@ -33,7 +35,7 @@ class MedicalRecordMenu(
     private fun create() {
         val pet = selector.choose(
             title = "Available pets",
-            items = patientService.listPets(),
+            items = patientService.listPets().sortedBy { it.name.lowercase() },
             emptyMessage = "No pets registered yet. Register a pet before creating a medical record.",
             prompt = "Select pet: ",
             formatter = { it.summary() }
@@ -41,7 +43,7 @@ class MedicalRecordMenu(
 
         val appointment = selector.chooseOptional(
             title = "Appointments for ${pet.name}",
-            items = appointmentService.listAppointmentsByPet(pet.id),
+            items = appointmentService.listAppointmentsByPet(pet.id).sortedBy { it.scheduledAt },
             emptyMessage = "No appointments found for this pet. The record will not be linked to an appointment.",
             prompt = "Select appointment or 0: ",
             formatter = { it.summary() }
@@ -61,7 +63,7 @@ class MedicalRecordMenu(
     private fun edit() {
         val record = selector.choose(
             title = "Medical records",
-            items = medicalRecordService.listRecords(),
+            items = sortedRecords(),
             emptyMessage = "No medical records created yet.",
             prompt = "Select record to edit: ",
             formatter = { it.summary() }
@@ -80,7 +82,7 @@ class MedicalRecordMenu(
     private fun viewHistory() {
         val record = selector.choose(
             title = "Medical records",
-            items = medicalRecordService.listRecords(),
+            items = sortedRecords(),
             emptyMessage = "No medical records created yet.",
             prompt = "Select record: ",
             formatter = { it.summary() }
@@ -88,7 +90,7 @@ class MedicalRecordMenu(
 
         selector.show(
             title = "Revision history for ${record.id}",
-            items = medicalRecordService.listRevisions(record.id),
+            items = medicalRecordService.listRevisions(record.id).sortedBy { it.changedAt },
             emptyMessage = "No revisions recorded for this medical record.",
             formatter = { it.summary() }
         )
@@ -97,11 +99,13 @@ class MedicalRecordMenu(
     private fun list() {
         selector.show(
             title = "Medical records",
-            items = medicalRecordService.listRecords(),
+            items = sortedRecords(),
             emptyMessage = "No medical records created yet.",
             formatter = { it.summary() }
         )
     }
+
+    private fun sortedRecords(): List<MedicalRecord> = medicalRecordService.listRecords().sortedBy { it.recordedAt }
 
     private fun Pet.summary(): String = "$id | $name | $species | Owner: $ownerId"
 
