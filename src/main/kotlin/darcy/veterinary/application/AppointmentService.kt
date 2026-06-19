@@ -4,6 +4,7 @@ import darcy.veterinary.domain.exception.EntityNotFoundException
 import darcy.veterinary.domain.exception.InvalidClinicOperationException
 import darcy.veterinary.domain.model.Appointment
 import darcy.veterinary.domain.model.AppointmentStatus
+import darcy.veterinary.domain.model.VisitType
 import darcy.veterinary.repository.AppointmentRepository
 import darcy.veterinary.repository.PetRepository
 import java.time.LocalDateTime
@@ -13,7 +14,13 @@ class AppointmentService(
     private val petRepository: PetRepository,
     private val idGenerator: IdGenerator = UuidIdGenerator
 ) {
-    fun scheduleAppointment(petId: String, scheduledAt: LocalDateTime, reason: String): Appointment {
+    fun scheduleAppointment(
+        petId: String,
+        scheduledAt: LocalDateTime,
+        reason: String,
+        visitType: VisitType = VisitType.GENERAL,
+        veterinarianName: String? = null
+    ): Appointment {
         require(reason.isNotBlank()) { "Appointment reason cannot be blank." }
         petRepository.findById(petId)
             ?: throw EntityNotFoundException("Pet with ID $petId was not found.")
@@ -23,12 +30,20 @@ class AppointmentService(
                 id = idGenerator.nextId("APT"),
                 petId = petId,
                 scheduledAt = scheduledAt,
-                reason = reason.trim()
+                reason = reason.trim(),
+                visitType = visitType,
+                veterinarianName = veterinarianName?.trim()?.ifBlank { null }
             )
         )
     }
 
-    fun rescheduleAppointment(id: String, scheduledAt: LocalDateTime, reason: String): Appointment {
+    fun rescheduleAppointment(
+        id: String,
+        scheduledAt: LocalDateTime,
+        reason: String,
+        visitType: VisitType? = null,
+        veterinarianName: String? = null
+    ): Appointment {
         require(reason.isNotBlank()) { "Appointment reason cannot be blank." }
         val appointment = getAppointment(id)
         if (appointment.status != AppointmentStatus.SCHEDULED) {
@@ -38,7 +53,9 @@ class AppointmentService(
         return appointmentRepository.save(
             appointment.copy(
                 scheduledAt = scheduledAt,
-                reason = reason.trim()
+                reason = reason.trim(),
+                visitType = visitType ?: appointment.visitType,
+                veterinarianName = veterinarianName?.trim()?.ifBlank { null } ?: appointment.veterinarianName
             )
         )
     }
