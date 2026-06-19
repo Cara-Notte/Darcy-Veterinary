@@ -11,7 +11,9 @@ import darcy.veterinary.domain.model.PaymentStatus
 import darcy.veterinary.domain.model.Pet
 import darcy.veterinary.repository.AppointmentRepository
 import darcy.veterinary.repository.InvoiceRepository
+import darcy.veterinary.repository.InvoiceStatusHistoryRepository
 import darcy.veterinary.repository.MedicalRecordRepository
+import darcy.veterinary.repository.MedicalRecordRevisionRepository
 import darcy.veterinary.repository.OwnerRepository
 import darcy.veterinary.repository.PetRepository
 import java.nio.file.Files
@@ -24,7 +26,9 @@ class CsvClinicStorage(private val dataDirectory: Path = Path.of("data")) : Clin
         petRepository: PetRepository,
         appointmentRepository: AppointmentRepository,
         medicalRecordRepository: MedicalRecordRepository,
-        invoiceRepository: InvoiceRepository
+        invoiceRepository: InvoiceRepository,
+        revisionRepository: MedicalRecordRevisionRepository?,
+        invoiceHistoryRepository: InvoiceStatusHistoryRepository?
     ) {
         Files.createDirectories(dataDirectory)
         writeLines("owners.csv", ownerRepository.findAll().map { owner ->
@@ -49,7 +53,9 @@ class CsvClinicStorage(private val dataDirectory: Path = Path.of("data")) : Clin
         petRepository: PetRepository,
         appointmentRepository: AppointmentRepository,
         medicalRecordRepository: MedicalRecordRepository,
-        invoiceRepository: InvoiceRepository
+        invoiceRepository: InvoiceRepository,
+        revisionRepository: MedicalRecordRevisionRepository?,
+        invoiceHistoryRepository: InvoiceStatusHistoryRepository?
     ) {
         readRows("owners.csv").forEach { columns ->
             if (columns.size >= 3) ownerRepository.save(Owner(columns[0], columns[1], columns[2], columns.getOrNull(3)?.ifBlank { null }))
