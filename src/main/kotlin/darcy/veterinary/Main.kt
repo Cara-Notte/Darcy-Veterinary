@@ -2,6 +2,7 @@ package darcy.veterinary
 
 import darcy.veterinary.application.AppointmentService
 import darcy.veterinary.application.BillingService
+import darcy.veterinary.application.ClinicReportService
 import darcy.veterinary.application.MedicalRecordService
 import darcy.veterinary.application.OwnerService
 import darcy.veterinary.application.PatientService
@@ -37,6 +38,7 @@ fun main() {
         petRepository,
         statusHistoryRepository = invoiceStatusHistoryRepository
     )
+    val reportService = ClinicReportService(ownerRepository, petRepository, appointmentRepository, invoiceRepository)
 
     ConsoleUI(
         ownerRepository = ownerRepository,
@@ -50,6 +52,7 @@ fun main() {
         patientService = patientService,
         appointmentService = appointmentService,
         medicalRecordService = medicalRecordService,
-        billingService = billingService
+        billingService = billingService,
+        reportService = reportService
     ).start()
 }
