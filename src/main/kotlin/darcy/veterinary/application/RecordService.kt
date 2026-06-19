@@ -22,7 +22,8 @@ class MedicalRecordService(
         treatment: String,
         notes: String,
         appointmentId: String? = null,
-        recordedAt: LocalDateTime = LocalDateTime.now()
+        recordedAt: LocalDateTime = LocalDateTime.now(),
+        veterinarianName: String? = null
     ): MedicalRecord {
         validateRecord(diagnosis, treatment)
         petRepository.findById(petId)
@@ -40,12 +41,19 @@ class MedicalRecordService(
                 diagnosis = diagnosis.trim(),
                 treatment = treatment.trim(),
                 notes = notes.trim(),
-                recordedAt = recordedAt
+                recordedAt = recordedAt,
+                veterinarianName = veterinarianName?.trim()?.ifBlank { null }
             )
         )
     }
 
-    fun updateRecord(id: String, diagnosis: String, treatment: String, notes: String): MedicalRecord {
+    fun updateRecord(
+        id: String,
+        diagnosis: String,
+        treatment: String,
+        notes: String,
+        veterinarianName: String? = null
+    ): MedicalRecord {
         validateRecord(diagnosis, treatment)
         val existing = getRecord(id)
 
@@ -64,7 +72,8 @@ class MedicalRecordService(
             existing.copy(
                 diagnosis = diagnosis.trim(),
                 treatment = treatment.trim(),
-                notes = notes.trim()
+                notes = notes.trim(),
+                veterinarianName = veterinarianName?.trim()?.ifBlank { null } ?: existing.veterinarianName
             )
         )
     }
