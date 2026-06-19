@@ -5,6 +5,7 @@ import darcy.veterinary.application.MedicalRecordService
 import darcy.veterinary.application.PatientService
 import darcy.veterinary.domain.model.Appointment
 import darcy.veterinary.domain.model.MedicalRecord
+import darcy.veterinary.domain.model.MedicalRecordRevision
 import darcy.veterinary.domain.model.Pet
 
 class MedicalRecordMenu(
@@ -19,11 +20,13 @@ class MedicalRecordMenu(
         println("\nMedical Records")
         println("1. Create record")
         println("2. Edit record")
-        println("3. List records")
-        when (input.choice("Choose menu: ", 1..3)) {
+        println("3. View record revision history")
+        println("4. List records")
+        when (input.choice("Choose menu: ", 1..4)) {
             1 -> create()
             2 -> edit()
-            3 -> list()
+            3 -> viewHistory()
+            4 -> list()
         }
     }
 
@@ -72,6 +75,23 @@ class MedicalRecordMenu(
         println("Medical record updated: ${updated.id}")
     }
 
+    private fun viewHistory() {
+        val record = selector.choose(
+            title = "Medical records",
+            items = medicalRecordService.listRecords(),
+            emptyMessage = "No medical records created yet.",
+            prompt = "Select record: ",
+            formatter = { it.summary() }
+        ) ?: return
+
+        selector.show(
+            title = "Revision history for ${record.id}",
+            items = medicalRecordService.listRevisions(record.id),
+            emptyMessage = "No revisions recorded for this medical record.",
+            formatter = { it.summary() }
+        )
+    }
+
     private fun list() {
         selector.show(
             title = "Medical records",
@@ -86,4 +106,6 @@ class MedicalRecordMenu(
     private fun Appointment.summary(): String = "$id | Pet: $petId | $scheduledAt | $status | $reason"
 
     private fun MedicalRecord.summary(): String = "$id | Pet: $petId | $diagnosis | $recordedAt"
+
+    private fun MedicalRecordRevision.summary(): String = "$id | Changed: $changedAt | Previous diagnosis: $diagnosis"
 }
