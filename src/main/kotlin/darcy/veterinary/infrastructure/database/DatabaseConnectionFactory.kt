@@ -11,6 +11,11 @@ class DatabaseConnectionFactory(
         config.databasePath.parent?.let { parent ->
             Files.createDirectories(parent)
         }
-        return DriverManager.getConnection("jdbc:sqlite:" + config.databasePath.toString())
+
+        return DriverManager.getConnection("jdbc:sqlite:" + config.databasePath.toString()).also { connection ->
+            connection.createStatement().use { statement ->
+                statement.execute("PRAGMA foreign_keys = ON")
+            }
+        }
     }
 }
