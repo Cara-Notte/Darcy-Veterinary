@@ -87,8 +87,6 @@ class SqliteOwnerRepository(
     }
 
     private companion object {
-        private const val COLUMNS = "id, full_name, phone_number, email"
-
         private const val SAVE_SQL = """
             INSERT INTO owners (id, full_name, phone_number, email, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -100,19 +98,19 @@ class SqliteOwnerRepository(
         """
 
         private const val FIND_BY_ID_SQL = """
-            SELECT $COLUMNS
+            SELECT id, full_name, phone_number, email
             FROM owners
             WHERE id = ?
         """
 
         private const val FIND_ALL_SQL = """
-            SELECT $COLUMNS
+            SELECT id, full_name, phone_number, email
             FROM owners
             ORDER BY rowid
         """
 
         private const val SEARCH_SQL = """
-            SELECT $COLUMNS
+            SELECT id, full_name, phone_number, email
             FROM owners
             WHERE LOWER(full_name) LIKE LOWER(?)
                 OR phone_number LIKE ?
