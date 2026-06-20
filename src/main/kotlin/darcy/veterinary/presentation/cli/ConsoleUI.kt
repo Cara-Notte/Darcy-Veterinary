@@ -49,7 +49,7 @@ class ConsoleUI(
             medicalRecordRevisionRepository,
             invoiceStatusHistoryRepository
         )
-        println("Darcy Veterinary Clinic Management")
+        println("Darcy Vet Clinic Management")
 
         var running = true
         while (running) {
