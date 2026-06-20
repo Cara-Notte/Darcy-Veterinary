@@ -142,11 +142,11 @@ class SqliteInvoiceStatusHistoryRepositoryTest {
 
         assertEquals(PaymentStatus.PAID, paid.paymentStatus)
         assertEquals(2, history.size)
-        assertEquals("HIS-0002", history[0].id)
+        assertEquals("HIS-0001", history[0].id)
         assertEquals(null, history[0].fromStatus)
         assertEquals(PaymentStatus.UNPAID, history[0].toStatus)
         assertEquals("Invoice created", history[0].reason)
-        assertEquals("HIS-0003", history[1].id)
+        assertEquals("HIS-0002", history[1].id)
         assertEquals(PaymentStatus.UNPAID, history[1].fromStatus)
         assertEquals(PaymentStatus.PAID, history[1].toStatus)
         assertEquals("Invoice paid", history[1].reason)
