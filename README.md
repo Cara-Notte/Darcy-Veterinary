@@ -84,10 +84,12 @@ Implemented:
 - Initial schema migration.
 - Index migration.
 - TDD migration coverage.
+- `SqliteOwnerRepository`.
+- SQLite owner repository integration tests.
 
 Not implemented yet:
 
-- SQLite repository implementations.
+- SQLite pet, appointment, medical record, revision, invoice, and invoice history repositories.
 - CLI wiring to SQLite by default.
 - JSON-to-SQLite import.
 - SQLite-to-JSON export.
