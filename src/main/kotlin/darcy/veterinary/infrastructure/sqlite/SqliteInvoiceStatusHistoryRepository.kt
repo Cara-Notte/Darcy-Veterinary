@@ -5,6 +5,7 @@ import darcy.veterinary.domain.model.PaymentStatus
 import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
 import darcy.veterinary.repository.InvoiceStatusHistoryRepository
 import java.sql.ResultSet
+import java.time.LocalDateTime
 
 class SqliteInvoiceStatusHistoryRepository(
     private val connectionFactory: DatabaseConnectionFactory
