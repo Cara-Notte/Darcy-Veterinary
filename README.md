@@ -25,6 +25,8 @@ Darcy Vet is a Kotlin veterinary clinic management system. It supports owner and
 
 The repository may remain named `Darcy-Veterinary`, but the user-facing product name is **Darcy Vet**. The current console application is the domain and workflow foundation for a future sellable desktop veterinary clinic management system.
 
+The current development focus is **Stage 2: Product Foundation**. Stage 2 is not a GUI rewrite. Its goal is to make the data layer reliable enough for real clinic data by introducing SQLite, migrations, repository integration tests, backup/restore, and JSON import/export support.
+
 ## Requirements
 
 - JDK 17 or newer
@@ -58,4 +60,36 @@ On Windows:
 
 ## Data storage
 
-Runtime data is saved under the `data/` directory. The CLI uses `clinic-data.json` by default so clinical notes, richer veterinary fields, change history, invoice status changes, and names can safely contain punctuation and line breaks. The `data/` directory is ignored by Git so local clinic records do not get committed accidentally.
+Runtime data is saved under the `data/` directory. The existing CLI still uses `clinic-data.json` by default so clinical notes, richer veterinary fields, change history, invoice status changes, and names can safely contain punctuation and line breaks.
+
+Stage 2 development adds the SQLite foundation under `data/darcy-vet.db`. The first SQLite slice includes:
+
+- `DatabaseConfig` for database and backup paths.
+- `DatabaseConnectionFactory` for local SQLite connections.
+- `DatabaseMigrator` for ordered, idempotent schema migrations.
+- Initial schema tables for owners, pets, allergies, medical conditions, appointments, medical records, medical record revisions, invoices, invoice items, invoice status history, and schema migrations.
+- Lookup indexes for common repository and reporting queries.
+- Migration tests that verify required tables, indexes, foreign-key support, and idempotency.
+
+The `data/` directory is ignored by Git so local clinic records and generated SQLite databases do not get committed accidentally.
+
+## Stage 2 status
+
+Implemented:
+
+- SQLite JDBC dependency.
+- Database path configuration.
+- SQLite connection factory.
+- Migration runner.
+- Initial schema migration.
+- Index migration.
+- TDD migration coverage.
+
+Not implemented yet:
+
+- SQLite repository implementations.
+- CLI wiring to SQLite by default.
+- JSON-to-SQLite import.
+- SQLite-to-JSON export.
+- Manual backup and restore.
+- Database health check.
