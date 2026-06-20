@@ -88,10 +88,12 @@ Implemented:
 - SQLite owner repository integration tests.
 - `SqlitePetRepository`.
 - SQLite pet repository integration tests.
+- `SqliteAppointmentRepository`.
+- SQLite appointment repository integration tests.
 
 Not implemented yet:
 
-- SQLite appointment, medical record, revision, invoice, and invoice history repositories.
+- SQLite medical record, revision, invoice, and invoice history repositories.
 - CLI wiring to SQLite by default.
 - JSON-to-SQLite import.
 - SQLite-to-JSON export.
