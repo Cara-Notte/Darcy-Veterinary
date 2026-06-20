@@ -1,0 +1,3 @@
+package darcy.veterinary.infrastructure.sqlite
+
+class SqliteInvoiceStatusHistoryRepository
