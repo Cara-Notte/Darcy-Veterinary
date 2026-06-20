@@ -1,5 +1,6 @@
 package darcy.veterinary.infrastructure.sqlite
 
 import darcy.veterinary.domain.model.InvoiceStatusHistory
+import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
 
 class SqliteInvoiceStatusHistoryRepository
