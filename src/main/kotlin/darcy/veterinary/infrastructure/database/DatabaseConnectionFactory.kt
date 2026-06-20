@@ -12,6 +12,8 @@ class DatabaseConnectionFactory(
             Files.createDirectories(parent)
         }
 
+        Class.forName("org.sqlite.JDBC")
+
         return DriverManager.getConnection("jdbc:sqlite:" + config.databasePath.toString()).also { connection ->
             connection.createStatement().use { statement ->
                 statement.execute("PRAGMA foreign_keys = ON")
