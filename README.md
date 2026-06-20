@@ -1,6 +1,6 @@
-# Darcy Veterinary
+# Darcy Vet
 
-Darcy Veterinary is a Kotlin console application for managing veterinary clinic operations. It supports owner and pet registration, richer veterinary profiles, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, safer menu navigation, empty-list feedback, and local JSON persistence.
+Darcy Vet is a Kotlin veterinary clinic management system. It supports owner and pet registration, richer veterinary profiles, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, safer menu navigation, empty-list feedback, and local JSON persistence.
 
 ## Features
 
@@ -20,6 +20,10 @@ Darcy Veterinary is a Kotlin console application for managing veterinary clinic 
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
 - Save and reload clinic data from local JSON files.
 - Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, and CLI list rendering.
+
+## Product direction
+
+The repository may remain named `Darcy-Veterinary`, but the user-facing product name is **Darcy Vet**. The current console application is the domain and workflow foundation for a future sellable desktop veterinary clinic management system.
 
 ## Requirements
 
