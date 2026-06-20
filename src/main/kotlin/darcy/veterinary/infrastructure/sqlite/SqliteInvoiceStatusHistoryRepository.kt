@@ -35,9 +35,39 @@ class SqliteInvoiceStatusHistoryRepository(
         return history
     }
 
-    override fun findAll(): List<InvoiceStatusHistory> = emptyList()
+    override fun findAll(): List<InvoiceStatusHistory> =
+        connectionFactory.openConnection().use { connection ->
+            connection.prepareStatement(FIND_ALL_SQL).use { statement ->
+                statement.executeQuery().use { result ->
+                    result.toHistoryList()
+                }
+            }
+        }
 
-    override fun findByInvoiceId(invoiceId: String): List<InvoiceStatusHistory> = emptyList()
+    override fun findByInvoiceId(invoiceId: String): List<InvoiceStatusHistory> =
+        connectionFactory.openConnection().use { connection ->
+            connection.prepareStatement(FIND_BY_INVOICE_ID_SQL).use { statement ->
+                statement.setString(1, invoiceId)
+                statement.executeQuery().use { result ->
+                    result.toHistoryList()
+                }
+            }
+        }
+
+    private fun ResultSet.toHistory(): InvoiceStatusHistory = InvoiceStatusHistory(
+        id = getString("id"),
+        invoiceId = getString("invoice_id"),
+        fromStatus = getString("from_status")?.let(PaymentStatus::valueOf),
+        toStatus = PaymentStatus.valueOf(getString("to_status")),
+        changedAt = LocalDateTime.parse(getString("changed_at")),
+        reason = getString("reason")
+    )
+
+    private fun ResultSet.toHistoryList(): List<InvoiceStatusHistory> = buildList {
+        while (next()) {
+            add(toHistory())
+        }
+    }
 
     private companion object {
         private const val SAVE_SQL = """
@@ -49,6 +79,19 @@ class SqliteInvoiceStatusHistoryRepository(
                 to_status = ?,
                 changed_at = ?,
                 reason = ?
+        """
+
+        private const val FIND_ALL_SQL = """
+            SELECT id, invoice_id, from_status, to_status, changed_at, reason
+            FROM invoice_status_history
+            ORDER BY rowid
+        """
+
+        private const val FIND_BY_INVOICE_ID_SQL = """
+            SELECT id, invoice_id, from_status, to_status, changed_at, reason
+            FROM invoice_status_history
+            WHERE invoice_id = ?
+            ORDER BY rowid
         """
     }
 }
