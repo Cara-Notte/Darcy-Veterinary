@@ -1,9 +1,9 @@
 package darcy.veterinary.sqlite
 
-import darcy.veterinary.domain.exception.DuplicateEntityException
-import darcy.veterinary.domain.model.Owner
 import darcy.veterinary.application.OwnerService
 import darcy.veterinary.application.SequenceIdGenerator
+import darcy.veterinary.domain.exception.DuplicateEntityException
+import darcy.veterinary.domain.model.Owner
 import darcy.veterinary.infrastructure.database.DatabaseConfig
 import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
 import darcy.veterinary.infrastructure.database.DatabaseMigrator
@@ -68,7 +68,7 @@ class SqliteOwnerRepositoryTest {
 
         assertEquals(listOf(nadia), repository.search("nadia"))
         assertEquals(listOf(bima), repository.search("2222"))
-        assertEquals(listOf(nadia), repository.search("EXAMPLE.COM").filter { it.id == nadia.id })
+        assertEquals(listOf(bima), repository.search("BIMA@EXAMPLE"))
         assertEquals(emptyList(), repository.search("   "))
     }
 
