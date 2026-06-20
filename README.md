@@ -86,10 +86,12 @@ Implemented:
 - TDD migration coverage.
 - `SqliteOwnerRepository`.
 - SQLite owner repository integration tests.
+- `SqlitePetRepository`.
+- SQLite pet repository integration tests.
 
 Not implemented yet:
 
-- SQLite pet, appointment, medical record, revision, invoice, and invoice history repositories.
+- SQLite appointment, medical record, revision, invoice, and invoice history repositories.
 - CLI wiring to SQLite by default.
 - JSON-to-SQLite import.
 - SQLite-to-JSON export.
