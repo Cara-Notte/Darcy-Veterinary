@@ -40,6 +40,19 @@ class DatabaseHealthCheckServiceTest {
         assertTrue(report.checks.all { it.message == "OK" })
     }
 
+    @Test
+    fun `missing database file reports unhealthy before connection creates it`() {
+        val config = databaseConfig()
+
+        val report = DatabaseHealthCheckService(config).check()
+
+        assertFalse(report.healthy)
+        val fileCheck = report.checks.single { it.name == "database file exists" }
+        assertFalse(fileCheck.passed)
+        assertEquals("Failed", fileCheck.message)
+        assertNotNull(report.checks.find { it.name == "sqlite connection opens" })
+    }
+
     private fun databaseConfig(): DatabaseConfig = DatabaseConfig(
         databasePath = tempDir.resolve("data/darcy-vet.db"),
         backupDirectory = tempDir.resolve("data/backups")
