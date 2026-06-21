@@ -1,0 +1,3 @@
+package darcy.veterinary.sqlite
+
+class DatabaseHealthCheckServiceTest
