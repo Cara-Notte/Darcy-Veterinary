@@ -15,4 +15,13 @@ import java.nio.file.Path
 
 class SqliteToJsonExport(
     private val databaseConfig: DatabaseConfig = DatabaseConfig()
-)
+) {
+    fun run(
+        jsonDirectory: Path = Path.of("data"),
+        fileName: String = "clinic-data.json"
+    ) {
+        val connectionFactory = DatabaseConnectionFactory(databaseConfig)
+        DatabaseMigrator(connectionFactory).migrate()
+        val storage = JsonClinicStorage(jsonDirectory, fileName)
+    }
+}
