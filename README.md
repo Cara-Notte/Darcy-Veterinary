@@ -19,7 +19,7 @@ Darcy Vet is a Kotlin veterinary clinic management system. It supports owner and
 - Use `0. Back` options in submenus.
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
 - Save and reload clinic data from a local SQLite database.
-- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, SQLite repositories, CLI runtime composition, and JSON import/export behavior.
+- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, SQLite repositories, CLI runtime composition, JSON import/export behavior, and database backup/restore behavior.
 
 ## Product direction
 
@@ -74,8 +74,9 @@ The SQLite foundation includes:
 - No-op CLI storage adapter so JSON snapshots are not loaded into or saved over the SQLite runtime path.
 - JSON-to-SQLite import support for migrating existing `clinic-data.json` snapshots into SQLite.
 - SQLite-to-JSON export support for writing SQLite data back into the JSON snapshot format.
+- Manual database backup and restore support for copying `data/darcy-vet.db` to and from timestamped files under `data/backups/`.
 
-The `data/` directory is ignored by Git so local clinic records and generated SQLite databases do not get committed accidentally.
+The `data/` directory is ignored by Git so local clinic records, generated SQLite databases, and local backups do not get committed accidentally.
 
 JSON is no longer the default runtime persistence path, but import/export support is available for migration and snapshots.
 
@@ -110,8 +111,9 @@ Implemented:
 - JSON-to-SQLite import integration tests.
 - SQLite-to-JSON export support.
 - SQLite-to-JSON export integration tests.
+- Manual backup and restore support.
+- Database backup and restore integration tests.
 
 Not implemented yet:
 
-- Manual backup and restore.
 - Database health check.
