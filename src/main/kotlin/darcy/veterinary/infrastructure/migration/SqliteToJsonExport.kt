@@ -30,5 +30,15 @@ class SqliteToJsonExport(
         val invoiceRepository = SqliteInvoiceRepository(connectionFactory)
         val revisionRepository = SqliteMedicalRecordRevisionRepository(connectionFactory)
         val invoiceHistoryRepository = SqliteInvoiceStatusHistoryRepository(connectionFactory)
+
+        storage.saveAll(
+            ownerRepository = ownerRepository,
+            petRepository = petRepository,
+            appointmentRepository = appointmentRepository,
+            medicalRecordRepository = medicalRecordRepository,
+            invoiceRepository = invoiceRepository,
+            revisionRepository = revisionRepository,
+            invoiceHistoryRepository = invoiceHistoryRepository
+        )
     }
 }
