@@ -1,5 +1,7 @@
 package darcy.veterinary.infrastructure.migration
 
 import darcy.veterinary.infrastructure.database.DatabaseConfig
+import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
+import darcy.veterinary.infrastructure.database.DatabaseMigrator
 
 class JsonToSqliteImport
