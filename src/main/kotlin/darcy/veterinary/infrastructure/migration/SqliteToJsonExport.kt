@@ -13,4 +13,6 @@ import darcy.veterinary.infrastructure.sqlite.SqlitePetRepository
 import darcy.veterinary.infrastructure.storage.JsonClinicStorage
 import java.nio.file.Path
 
-class SqliteToJsonExport
+class SqliteToJsonExport(
+    private val databaseConfig: DatabaseConfig = DatabaseConfig()
+)
