@@ -10,5 +10,7 @@ import darcy.veterinary.infrastructure.sqlite.SqliteMedicalRecordRepository
 import darcy.veterinary.infrastructure.sqlite.SqliteMedicalRecordRevisionRepository
 import darcy.veterinary.infrastructure.sqlite.SqliteOwnerRepository
 import darcy.veterinary.infrastructure.sqlite.SqlitePetRepository
+import darcy.veterinary.infrastructure.storage.JsonClinicStorage
+import java.nio.file.Path
 
 class JsonToSqliteImport
