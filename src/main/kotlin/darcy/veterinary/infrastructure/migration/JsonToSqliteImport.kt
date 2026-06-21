@@ -3,5 +3,6 @@ package darcy.veterinary.infrastructure.migration
 import darcy.veterinary.infrastructure.database.DatabaseConfig
 import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
 import darcy.veterinary.infrastructure.database.DatabaseMigrator
+import darcy.veterinary.infrastructure.sqlite.SqliteOwnerRepository
 
 class JsonToSqliteImport
