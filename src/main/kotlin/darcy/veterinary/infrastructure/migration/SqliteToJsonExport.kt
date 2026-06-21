@@ -23,5 +23,12 @@ class SqliteToJsonExport(
         val connectionFactory = DatabaseConnectionFactory(databaseConfig)
         DatabaseMigrator(connectionFactory).migrate()
         val storage = JsonClinicStorage(jsonDirectory, fileName)
+        val ownerRepository = SqliteOwnerRepository(connectionFactory)
+        val petRepository = SqlitePetRepository(connectionFactory)
+        val appointmentRepository = SqliteAppointmentRepository(connectionFactory)
+        val medicalRecordRepository = SqliteMedicalRecordRepository(connectionFactory)
+        val invoiceRepository = SqliteInvoiceRepository(connectionFactory)
+        val revisionRepository = SqliteMedicalRecordRevisionRepository(connectionFactory)
+        val invoiceHistoryRepository = SqliteInvoiceStatusHistoryRepository(connectionFactory)
     }
 }
