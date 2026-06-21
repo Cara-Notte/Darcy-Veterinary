@@ -13,4 +13,24 @@ import darcy.veterinary.infrastructure.sqlite.SqlitePetRepository
 import darcy.veterinary.infrastructure.storage.JsonClinicStorage
 import java.nio.file.Path
 
-class JsonToSqliteImport
+class JsonToSqliteImport(
+    private val databaseConfig: DatabaseConfig = DatabaseConfig()
+) {
+    fun run(
+        jsonDirectory: Path = Path.of("data"),
+        fileName: String = "clinic-data.json"
+    ) {
+        val connectionFactory = DatabaseConnectionFactory(databaseConfig)
+        DatabaseMigrator(connectionFactory).migrate()
+
+        JsonClinicStorage(jsonDirectory, fileName).loadAll(
+            ownerRepository = SqliteOwnerRepository(connectionFactory),
+            petRepository = SqlitePetRepository(connectionFactory),
+            appointmentRepository = SqliteAppointmentRepository(connectionFactory),
+            medicalRecordRepository = SqliteMedicalRecordRepository(connectionFactory),
+            invoiceRepository = SqliteInvoiceRepository(connectionFactory),
+            revisionRepository = SqliteMedicalRecordRevisionRepository(connectionFactory),
+            invoiceHistoryRepository = SqliteInvoiceStatusHistoryRepository(connectionFactory)
+        )
+    }
+}
