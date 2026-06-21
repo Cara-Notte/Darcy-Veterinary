@@ -19,7 +19,7 @@ Darcy Vet is a Kotlin veterinary clinic management system. It supports owner and
 - Use `0. Back` options in submenus.
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
 - Save and reload clinic data from a local SQLite database.
-- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, SQLite repositories, CLI runtime composition, and JSON-to-SQLite import behavior.
+- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, SQLite repositories, CLI runtime composition, and JSON import/export behavior.
 
 ## Product direction
 
@@ -73,10 +73,11 @@ The SQLite foundation includes:
 - CLI runtime composition that wires services to SQLite repositories by default.
 - No-op CLI storage adapter so JSON snapshots are not loaded into or saved over the SQLite runtime path.
 - JSON-to-SQLite import support for migrating existing `clinic-data.json` snapshots into SQLite.
+- SQLite-to-JSON export support for writing SQLite data back into the JSON snapshot format.
 
 The `data/` directory is ignored by Git so local clinic records and generated SQLite databases do not get committed accidentally.
 
-SQLite-to-JSON export is still planned as a support feature for snapshots, but JSON is no longer the default runtime persistence path.
+JSON is no longer the default runtime persistence path, but import/export support is available for migration and snapshots.
 
 ## Stage 2 status
 
@@ -107,9 +108,10 @@ Implemented:
 - SQLite CLI runtime composition tests.
 - JSON-to-SQLite import support.
 - JSON-to-SQLite import integration tests.
+- SQLite-to-JSON export support.
+- SQLite-to-JSON export integration tests.
 
 Not implemented yet:
 
-- SQLite-to-JSON export.
 - Manual backup and restore.
 - Database health check.
