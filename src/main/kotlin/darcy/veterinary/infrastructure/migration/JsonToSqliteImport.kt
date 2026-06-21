@@ -3,6 +3,11 @@ package darcy.veterinary.infrastructure.migration
 import darcy.veterinary.infrastructure.database.DatabaseConfig
 import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
 import darcy.veterinary.infrastructure.database.DatabaseMigrator
+import darcy.veterinary.infrastructure.sqlite.SqliteAppointmentRepository
+import darcy.veterinary.infrastructure.sqlite.SqliteInvoiceRepository
+import darcy.veterinary.infrastructure.sqlite.SqliteInvoiceStatusHistoryRepository
+import darcy.veterinary.infrastructure.sqlite.SqliteMedicalRecordRepository
+import darcy.veterinary.infrastructure.sqlite.SqliteMedicalRecordRevisionRepository
 import darcy.veterinary.infrastructure.sqlite.SqliteOwnerRepository
 import darcy.veterinary.infrastructure.sqlite.SqlitePetRepository
 
