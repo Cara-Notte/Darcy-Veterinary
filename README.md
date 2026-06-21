@@ -1,6 +1,6 @@
 # Darcy Vet
 
-Darcy Vet is a Kotlin veterinary clinic management system. It supports owner and pet registration, richer veterinary profiles, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, safer menu navigation, empty-list feedback, and local JSON persistence.
+Darcy Vet is a Kotlin veterinary clinic management system. It supports owner and pet registration, richer veterinary profiles, appointment scheduling, medical records, service-based billing, selectable CLI records, change history, reports, safer menu navigation, empty-list feedback, and local SQLite persistence.
 
 ## Features
 
@@ -18,8 +18,8 @@ Darcy Vet is a Kotlin veterinary clinic management system. It supports owner and
 - Select owners, pets, appointments, records, and invoices from numbered CLI lists instead of typing IDs manually.
 - Use `0. Back` options in submenus.
 - Show clear empty-state messages when there are no owners, pets, appointments, records, or invoices to display.
-- Save and reload clinic data from local JSON files.
-- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, and CLI list rendering.
+- Save and reload clinic data from a local SQLite database.
+- Run automated tests for core workflows, correction workflows, richer domain fields, change history, reports, CLI confirmation parsing, storage behavior, SQLite repositories, and CLI runtime composition.
 
 ## Product direction
 
@@ -60,18 +60,22 @@ On Windows:
 
 ## Data storage
 
-Runtime data is saved under the `data/` directory. The existing CLI still uses `clinic-data.json` by default so clinical notes, richer veterinary fields, change history, invoice status changes, and names can safely contain punctuation and line breaks.
+Runtime data is saved under the `data/` directory. The CLI now uses SQLite by default at `data/darcy-vet.db`. Database migrations run automatically during CLI startup before repositories are used.
 
-Stage 2 development adds the SQLite foundation under `data/darcy-vet.db`. The first SQLite slice includes:
+The SQLite foundation includes:
 
 - `DatabaseConfig` for database and backup paths.
 - `DatabaseConnectionFactory` for local SQLite connections.
 - `DatabaseMigrator` for ordered, idempotent schema migrations.
 - Initial schema tables for owners, pets, allergies, medical conditions, appointments, medical records, medical record revisions, invoices, invoice items, invoice status history, and schema migrations.
 - Lookup indexes for common repository and reporting queries.
-- Migration tests that verify required tables, indexes, foreign-key support, and idempotency.
+- SQLite repository implementations for all current repository interfaces.
+- CLI runtime composition that wires services to SQLite repositories by default.
+- No-op CLI storage adapter so JSON snapshots are not loaded into or saved over the SQLite runtime path.
 
 The `data/` directory is ignored by Git so local clinic records and generated SQLite databases do not get committed accidentally.
+
+JSON import/export is still planned as a support feature for migration and snapshots, but JSON is no longer the default runtime persistence path.
 
 ## Stage 2 status
 
@@ -98,10 +102,11 @@ Implemented:
 - SQLite invoice repository integration tests.
 - `SqliteInvoiceStatusHistoryRepository`.
 - SQLite invoice status history repository integration tests.
+- CLI wiring to SQLite by default.
+- SQLite CLI runtime composition tests.
 
 Not implemented yet:
 
-- CLI wiring to SQLite by default.
 - JSON-to-SQLite import.
 - SQLite-to-JSON export.
 - Manual backup and restore.
