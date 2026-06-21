@@ -4,5 +4,6 @@ import darcy.veterinary.infrastructure.database.DatabaseConfig
 import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
 import darcy.veterinary.infrastructure.database.DatabaseMigrator
 import darcy.veterinary.infrastructure.sqlite.SqliteOwnerRepository
+import darcy.veterinary.infrastructure.sqlite.SqlitePetRepository
 
 class JsonToSqliteImport
