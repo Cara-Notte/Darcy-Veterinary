@@ -96,10 +96,11 @@ Implemented:
 - SQLite medical record revision repository integration tests.
 - `SqliteInvoiceRepository`.
 - SQLite invoice repository integration tests.
+- `SqliteInvoiceStatusHistoryRepository`.
+- SQLite invoice status history repository integration tests.
 
 Not implemented yet:
 
-- SQLite invoice history repository.
 - CLI wiring to SQLite by default.
 - JSON-to-SQLite import.
 - SQLite-to-JSON export.
