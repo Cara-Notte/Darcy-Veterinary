@@ -20,7 +20,9 @@ class DatabaseHealthCheckService(
                 checks += checkResult("foreign keys enabled") { connection.foreignKeysEnabled() }
                 checks += checkResult("integrity check passes") { connection.integrityCheckPasses() }
                 checks += checkResult("schema migrations table exists") { connection.tableExists("schema_migrations") }
-                checks += checkResult("all required tables exist") { REQUIRED_TABLES.all(connection::tableExists) }
+                checks += checkResult("all required tables exist") {
+                    REQUIRED_TABLES.all { tableName -> connection.tableExists(tableName) }
+                }
                 checks += checkResult("all required migrations applied") { connection.appliedMigrationVersions().containsAll(REQUIRED_MIGRATIONS) }
             }
         } catch (error: Exception) {
