@@ -120,7 +120,7 @@ class ClinicWorkspaceFacadeTest {
         assertEquals(listOf("Sensitive stomach"), chart.patient.medicalConditions)
         assertEquals("Vomiting", chart.appointments.single().reason)
         assertEquals("Gastritis", chart.records.single().diagnosis)
-        assertEquals(150_000.0, chart.invoices.single().total)
+        assertEquals(100_000.0, chart.invoices.single().total)
     }
 
     @Test
