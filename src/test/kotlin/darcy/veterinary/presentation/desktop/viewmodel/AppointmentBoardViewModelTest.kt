@@ -13,6 +13,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
@@ -92,6 +93,71 @@ class AppointmentBoardViewModelTest {
         app.viewModel.applyStatusFilter(AppointmentStatus.CANCELLED)
 
         assertEquals("No appointments match the selected status for this date.", app.viewModel.state.emptyStateMessage)
+    }
+
+    @Test
+    fun `cancel appointment requires pending confirmation before mutation`() {
+        val app = fixture()
+        val owner = app.ownerService.registerOwner("Lia Santoso", "0822222222")
+        val pet = app.patientService.registerPet(owner.id, "Bento", "Dog")
+        val appointment = app.appointmentService.scheduleAppointment(
+            petId = pet.id,
+            scheduledAt = LocalDateTime.of(2026, 6, 23, 13, 0),
+            reason = "Dental check"
+        )
+        app.viewModel.load()
+
+        app.viewModel.requestCancelAppointment(appointment.id)
+
+        assertNotNull(app.viewModel.state.pendingAction)
+        assertEquals(AppointmentBoardAction.CANCEL, app.viewModel.state.pendingAction?.action)
+        assertEquals(AppointmentStatus.SCHEDULED, app.appointmentService.getAppointment(appointment.id).status)
+
+        app.viewModel.confirmPendingAction()
+
+        assertNull(app.viewModel.state.pendingAction)
+        assertEquals("Appointment cancelled.", app.viewModel.state.successMessage)
+        assertEquals(AppointmentStatus.CANCELLED, app.appointmentService.getAppointment(appointment.id).status)
+        assertEquals(1, app.viewModel.state.board?.summary?.cancelledCount)
+    }
+
+    @Test
+    fun `complete appointment reloads board and reports success after confirmation`() {
+        val app = fixture()
+        val owner = app.ownerService.registerOwner("Maya Hartono", "0833333333")
+        val pet = app.patientService.registerPet(owner.id, "Darcy", "Dog")
+        val appointment = app.appointmentService.scheduleAppointment(
+            petId = pet.id,
+            scheduledAt = LocalDateTime.of(2026, 6, 23, 9, 30),
+            reason = "Vaccination"
+        )
+        app.viewModel.load()
+
+        app.viewModel.requestCompleteAppointment(appointment.id)
+        app.viewModel.confirmPendingAction()
+
+        assertEquals("Appointment marked as completed.", app.viewModel.state.successMessage)
+        assertEquals(AppointmentStatus.COMPLETED, app.appointmentService.getAppointment(appointment.id).status)
+        assertEquals(1, app.viewModel.state.board?.summary?.completedCount)
+    }
+
+    @Test
+    fun `non scheduled appointment actions are rejected before confirmation`() {
+        val app = fixture()
+        val owner = app.ownerService.registerOwner("Nadia Prasetyo", "0811111111")
+        val pet = app.patientService.registerPet(owner.id, "Miso", "Cat")
+        val appointment = app.appointmentService.scheduleAppointment(
+            petId = pet.id,
+            scheduledAt = LocalDateTime.of(2026, 6, 23, 9, 0),
+            reason = "Completed visit"
+        )
+        app.appointmentService.completeAppointment(appointment.id)
+        app.viewModel.load()
+
+        app.viewModel.requestCancelAppointment(appointment.id)
+
+        assertNull(app.viewModel.state.pendingAction)
+        assertEquals("Only scheduled appointments can be updated.", app.viewModel.state.errorMessage)
     }
 
     private data class Fixture(
