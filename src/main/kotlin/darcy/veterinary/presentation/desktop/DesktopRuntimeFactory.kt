@@ -6,6 +6,7 @@ import darcy.veterinary.application.AppointmentBoardFacade
 import darcy.veterinary.application.ClinicWorkspaceFacade
 import darcy.veterinary.infrastructure.database.DatabaseConfig
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardViewModel
+import darcy.veterinary.presentation.desktop.viewmodel.OwnerFormViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.PatientSearchViewModel
 import java.time.LocalDate
 
@@ -14,7 +15,8 @@ data class DesktopRuntime(
     val workspaceFacade: ClinicWorkspaceFacade,
     val appointmentBoardFacade: AppointmentBoardFacade,
     val patientSearchViewModel: PatientSearchViewModel,
-    val appointmentBoardViewModel: AppointmentBoardViewModel
+    val appointmentBoardViewModel: AppointmentBoardViewModel,
+    val ownerFormViewModel: OwnerFormViewModel
 )
 
 object DesktopRuntimeFactory {
@@ -31,7 +33,8 @@ object DesktopRuntimeFactory {
             workspaceFacade = workspaceFacade,
             appointmentBoardFacade = appointmentBoardFacade,
             patientSearchViewModel = PatientSearchViewModel(workspaceFacade),
-            appointmentBoardViewModel = AppointmentBoardViewModel(appointmentBoardFacade, initialBoardDate)
+            appointmentBoardViewModel = AppointmentBoardViewModel(appointmentBoardFacade, initialBoardDate),
+            ownerFormViewModel = OwnerFormViewModel(appRuntime.ownerService)
         )
     }
 }
