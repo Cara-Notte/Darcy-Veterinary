@@ -76,10 +76,10 @@ class PatientFormViewModelTest {
 
         app.viewModel.save()
 
-        val patient = app.patientService.getPet("PET-0002")
+        val patient = app.patientService.getPet("PET-0001")
         assertFalse(app.viewModel.state.isSaving)
         assertEquals(PatientFormMode.EDIT, app.viewModel.state.mode)
-        assertEquals("PET-0002", app.viewModel.state.savedPatientId)
+        assertEquals("PET-0001", app.viewModel.state.savedPatientId)
         assertEquals("Patient profile created.", app.viewModel.state.successMessage)
         assertEquals("Darcy", patient.name)
         assertEquals("Dog", patient.species)
