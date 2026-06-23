@@ -47,6 +47,11 @@ object AppRuntimeFactory {
             recordService = medicalRecordService,
             billingService = billingService
         )
+        val appointmentBoardFacade = AppointmentBoardFacade(
+            ownerService = ownerService,
+            patientService = patientService,
+            appointmentService = appointmentService
+        )
 
         return AppRuntime(
             ownerRepository = ownerRepository,
@@ -63,7 +68,8 @@ object AppRuntimeFactory {
             medicalRecordService = medicalRecordService,
             billingService = billingService,
             reportService = reportService,
-            clinicWorkspaceFacade = clinicWorkspaceFacade
+            clinicWorkspaceFacade = clinicWorkspaceFacade,
+            appointmentBoardFacade = appointmentBoardFacade
         )
     }
 }

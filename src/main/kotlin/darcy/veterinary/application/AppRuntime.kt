@@ -24,5 +24,6 @@ data class AppRuntime(
     val medicalRecordService: MedicalRecordService,
     val billingService: BillingService,
     val reportService: ClinicReportService,
-    val clinicWorkspaceFacade: ClinicWorkspaceFacade
+    val clinicWorkspaceFacade: ClinicWorkspaceFacade,
+    val appointmentBoardFacade: AppointmentBoardFacade
 )
