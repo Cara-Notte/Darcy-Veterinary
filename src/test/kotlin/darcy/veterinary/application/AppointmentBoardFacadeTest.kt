@@ -103,6 +103,31 @@ class AppointmentBoardFacadeTest {
         assertEquals("Upcoming visit", board.rows.single().reason)
     }
 
+    @Test
+    fun `complete and cancel return enriched updated appointment rows`() {
+        val app = fixture()
+        val owner = app.ownerService.registerOwner("Lia Santoso", "0822222222")
+        val pet = app.patientService.registerPet(owner.id, "Bento", "Dog")
+        val completed = app.appointmentService.scheduleAppointment(
+            petId = pet.id,
+            scheduledAt = LocalDateTime.of(2026, 6, 23, 13, 0),
+            reason = "Dental check"
+        )
+        val cancelled = app.appointmentService.scheduleAppointment(
+            petId = pet.id,
+            scheduledAt = LocalDateTime.of(2026, 6, 23, 14, 0),
+            reason = "Follow up"
+        )
+
+        val completedRow = app.facade.completeAppointment(completed.id)
+        val cancelledRow = app.facade.cancelAppointment(cancelled.id)
+
+        assertEquals(AppointmentStatus.COMPLETED, completedRow.status)
+        assertEquals(AppointmentStatus.CANCELLED, cancelledRow.status)
+        assertEquals("Bento", completedRow.patientName)
+        assertEquals("Lia Santoso", cancelledRow.ownerName)
+    }
+
     private data class Fixture(
         val ownerService: OwnerService,
         val patientService: PatientService,

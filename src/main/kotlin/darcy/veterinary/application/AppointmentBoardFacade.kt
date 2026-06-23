@@ -1,5 +1,6 @@
 package darcy.veterinary.application
 
+import darcy.veterinary.domain.model.Appointment
 import darcy.veterinary.domain.model.AppointmentStatus
 import darcy.veterinary.domain.model.VisitType
 import java.time.LocalDate
@@ -20,27 +21,7 @@ class AppointmentBoardFacade(
 
         val rows = appointmentsForDate
             .filter { statusFilter == null || it.status == statusFilter }
-            .map { appointment ->
-                val patient = patientService.getPet(appointment.petId)
-                val owner = ownerService.getOwner(patient.ownerId)
-
-                AppointmentBoardRow(
-                    id = appointment.id,
-                    scheduledAt = appointment.scheduledAt,
-                    status = appointment.status,
-                    reason = appointment.reason,
-                    visitType = appointment.visitType,
-                    veterinarianName = appointment.veterinarianName,
-                    patientId = patient.id,
-                    patientName = patient.name,
-                    species = patient.species,
-                    breed = patient.breed,
-                    ownerId = owner.id,
-                    ownerName = owner.fullName,
-                    ownerPhoneNumber = owner.phoneNumber,
-                    hasPatientAlerts = patient.allergies.isNotEmpty() || patient.medicalConditions.isNotEmpty()
-                )
-            }
+            .map { it.toBoardRow() }
 
         return AppointmentBoardViewData(
             date = date,
@@ -52,6 +33,34 @@ class AppointmentBoardFacade(
                 completedCount = appointmentsForDate.count { it.status == AppointmentStatus.COMPLETED },
                 cancelledCount = appointmentsForDate.count { it.status == AppointmentStatus.CANCELLED }
             )
+        )
+    }
+
+    fun completeAppointment(id: String): AppointmentBoardRow =
+        appointmentService.completeAppointment(id).toBoardRow()
+
+    fun cancelAppointment(id: String): AppointmentBoardRow =
+        appointmentService.cancelAppointment(id).toBoardRow()
+
+    private fun Appointment.toBoardRow(): AppointmentBoardRow {
+        val patient = patientService.getPet(petId)
+        val owner = ownerService.getOwner(patient.ownerId)
+
+        return AppointmentBoardRow(
+            id = id,
+            scheduledAt = scheduledAt,
+            status = status,
+            reason = reason,
+            visitType = visitType,
+            veterinarianName = veterinarianName,
+            patientId = patient.id,
+            patientName = patient.name,
+            species = patient.species,
+            breed = patient.breed,
+            ownerId = owner.id,
+            ownerName = owner.fullName,
+            ownerPhoneNumber = owner.phoneNumber,
+            hasPatientAlerts = patient.allergies.isNotEmpty() || patient.medicalConditions.isNotEmpty()
         )
     }
 }
