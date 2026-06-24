@@ -48,6 +48,7 @@ import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
 import darcy.veterinary.presentation.desktop.viewmodel.DashboardSummaryState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopNavigationState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopSection
+import darcy.veterinary.presentation.desktop.viewmodel.PatientSearchState
 import java.time.format.DateTimeFormatter
 
 private val LargeGlassShape = RoundedCornerShape(28.dp)
@@ -71,9 +72,14 @@ fun DarcyVetDesktopApp() {
     var navigationState by remember { mutableStateOf(runtime.navigationViewModel.state) }
     var dashboardState by remember { mutableStateOf(runtime.dashboardSummaryViewModel.state) }
     var appointmentBoardState by remember { mutableStateOf(runtime.appointmentBoardViewModel.state) }
+    var patientSearchState by remember { mutableStateOf(runtime.patientSearchViewModel.state) }
 
     fun refreshNavigation() {
         navigationState = runtime.navigationViewModel.state
+    }
+
+    fun refreshPatientSearch() {
+        patientSearchState = runtime.patientSearchViewModel.state
     }
 
     fun loadDashboard() {
@@ -140,26 +146,45 @@ fun DarcyVetDesktopApp() {
                     navigationState = navigationState,
                     dashboardState = dashboardState,
                     appointmentBoardState = appointmentBoardState,
+                    patientSearchState = patientSearchState,
                     onRefreshDashboard = ::loadDashboard,
                     onRefreshAppointments = ::loadAppointmentBoard,
+                    onSearchQueryChange = { query ->
+                        runtime.patientSearchViewModel.updateQuery(query)
+                        refreshPatientSearch()
+                    },
+                    onSearchPatients = {
+                        runtime.patientSearchViewModel.search()
+                        refreshPatientSearch()
+                    },
+                    onOpenPatientChart = { patientId, ownerId ->
+                        runtime.patientSearchViewModel.openPatientChart(patientId)
+                        refreshPatientSearch()
+                        runtime.navigationViewModel.openPatientChart(patientId, ownerId)
+                        refreshNavigation()
+                    },
+                    onClearPatientChart = {
+                        runtime.patientSearchViewModel.clearSelectedChart()
+                        refreshPatientSearch()
+                    },
                     onStartOwner = {
                         runtime.navigationViewModel.startNewOwner()
                         refreshNavigation()
                     },
-                    onStartPatient = {
-                        runtime.navigationViewModel.startNewPatient()
+                    onStartPatient = { ownerId ->
+                        runtime.navigationViewModel.startNewPatient(ownerId)
                         refreshNavigation()
                     },
-                    onScheduleAppointment = {
-                        runtime.navigationViewModel.scheduleAppointment()
+                    onScheduleAppointment = { patientId ->
+                        runtime.navigationViewModel.scheduleAppointment(patientId)
                         refreshNavigation()
                     },
-                    onStartInvoice = {
-                        runtime.navigationViewModel.startInvoice()
+                    onStartInvoice = { patientId ->
+                        runtime.navigationViewModel.startInvoice(patientId)
                         refreshNavigation()
                     },
-                    onStartMedicalRecord = {
-                        runtime.navigationViewModel.startMedicalRecord()
+                    onStartMedicalRecord = { patientId ->
+                        runtime.navigationViewModel.startMedicalRecord(patientId)
                         refreshNavigation()
                     }
                 )
@@ -226,13 +251,18 @@ private fun MainContent(
     navigationState: DesktopNavigationState,
     dashboardState: DashboardSummaryState,
     appointmentBoardState: AppointmentBoardState,
+    patientSearchState: PatientSearchState,
     onRefreshDashboard: () -> Unit,
     onRefreshAppointments: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onSearchPatients: () -> Unit,
+    onOpenPatientChart: (String, String?) -> Unit,
+    onClearPatientChart: () -> Unit,
     onStartOwner: () -> Unit,
-    onStartPatient: () -> Unit,
-    onScheduleAppointment: () -> Unit,
-    onStartInvoice: () -> Unit,
-    onStartMedicalRecord: () -> Unit
+    onStartPatient: (String?) -> Unit,
+    onScheduleAppointment: (String?) -> Unit,
+    onStartInvoice: (String?) -> Unit,
+    onStartMedicalRecord: (String?) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -246,19 +276,30 @@ private fun MainContent(
         Divider(color = DarcyColor.GlassBorder)
         when (navigationState.currentSection) {
             DesktopSection.DASHBOARD -> DashboardPanel(dashboardState, onRefreshDashboard)
-            DesktopSection.OWNERS_AND_PATIENTS -> OwnersPatientsPanel(onStartOwner, onStartPatient)
-            DesktopSection.APPOINTMENTS -> AppointmentBoardPanel(appointmentBoardState, onRefreshAppointments, onScheduleAppointment)
+            DesktopSection.OWNERS_AND_PATIENTS -> OwnerPatientWorkspacePanel(
+                state = patientSearchState,
+                onQueryChange = onSearchQueryChange,
+                onSearch = onSearchPatients,
+                onOpenPatientChart = onOpenPatientChart,
+                onClearPatientChart = onClearPatientChart,
+                onStartOwner = onStartOwner,
+                onStartPatient = onStartPatient,
+                onScheduleAppointment = onScheduleAppointment,
+                onStartMedicalRecord = onStartMedicalRecord,
+                onStartInvoice = onStartInvoice
+            )
+            DesktopSection.APPOINTMENTS -> AppointmentBoardPanel(appointmentBoardState, onRefreshAppointments, { onScheduleAppointment(null) })
             DesktopSection.MEDICAL_RECORDS -> PlaceholderWorkflowPanel(
                 title = "Medical Records",
                 body = "Create and edit clinical notes using the MedicalRecordFormViewModel.",
                 actionLabel = "New medical record",
-                onAction = onStartMedicalRecord
+                onAction = { onStartMedicalRecord(null) }
             )
             DesktopSection.BILLING -> PlaceholderWorkflowPanel(
                 title = "Billing & Checkout",
                 body = "Create invoices and confirm payment or void actions using BillingCheckoutViewModel.",
                 actionLabel = "New invoice",
-                onAction = onStartInvoice
+                onAction = { onStartInvoice(null) }
             )
             DesktopSection.REPORTS -> PlaceholderWorkflowPanel(
                 title = "Reports",
@@ -308,24 +349,12 @@ private fun DashboardReportDetails(report: ClinicOverviewReport) {
 }
 
 @Composable
-private fun MetricCard(label: String, value: String, modifier: Modifier = Modifier) {
+internal fun MetricCard(label: String, value: String, modifier: Modifier = Modifier) {
     GlassCard(modifier = modifier) {
         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(label, style = MaterialTheme.typography.caption, color = DarcyColor.TextMuted)
             Text(value, style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
         }
-    }
-}
-
-@Composable
-private fun OwnersPatientsPanel(onStartOwner: () -> Unit, onStartPatient: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        MutedText("Owner and patient workflows are ready at the view-model layer.")
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = onStartOwner) { Text("New owner") }
-            Button(onClick = onStartPatient) { Text("New patient") }
-        }
-        EmptyState("Search and chart UI will bind to PatientSearchViewModel, OwnerFormViewModel, and PatientFormViewModel next.")
     }
 }
 
@@ -392,7 +421,7 @@ private fun PlaceholderWorkflowPanel(title: String, body: String, actionLabel: S
 }
 
 @Composable
-private fun GlassCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun GlassCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Card(
         modifier = modifier.border(BorderStroke(1.dp, DarcyColor.GlassBorder), MediumGlassShape),
         shape = MediumGlassShape,
@@ -404,7 +433,7 @@ private fun GlassCard(modifier: Modifier = Modifier, content: @Composable () -> 
 }
 
 @Composable
-private fun EmptyState(message: String) {
+internal fun EmptyState(message: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -418,11 +447,11 @@ private fun EmptyState(message: String) {
 }
 
 @Composable
-private fun ErrorState(message: String) {
+internal fun ErrorState(message: String) {
     Text(message, color = DarcyColor.SemanticRed, fontWeight = FontWeight.Bold)
 }
 
 @Composable
-private fun MutedText(text: String) {
+internal fun MutedText(text: String) {
     Text(text, style = MaterialTheme.typography.body2, color = DarcyColor.TextSecondary)
 }
