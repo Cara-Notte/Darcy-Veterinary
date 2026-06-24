@@ -189,7 +189,7 @@ private fun <T> TimelinePanel(title: String, items: List<T>, modifier: Modifier 
             if (items.isEmpty()) {
                 MutedText("No entries yet.")
             } else {
-                items.take(5).forEach(itemContent)
+                items.take(5).forEach { item -> itemContent(item) }
             }
         }
     }
