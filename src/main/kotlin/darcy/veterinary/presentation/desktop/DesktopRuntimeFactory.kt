@@ -9,6 +9,7 @@ import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.BillingCheckoutViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.DashboardSummaryViewModel
+import darcy.veterinary.presentation.desktop.viewmodel.DesktopNavigationViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.MedicalRecordFormViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.OwnerFormViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.PatientFormViewModel
@@ -19,6 +20,7 @@ data class DesktopRuntime(
     val appRuntime: AppRuntime,
     val workspaceFacade: ClinicWorkspaceFacade,
     val appointmentBoardFacade: AppointmentBoardFacade,
+    val navigationViewModel: DesktopNavigationViewModel,
     val dashboardSummaryViewModel: DashboardSummaryViewModel,
     val patientSearchViewModel: PatientSearchViewModel,
     val appointmentBoardViewModel: AppointmentBoardViewModel,
@@ -42,6 +44,7 @@ object DesktopRuntimeFactory {
             appRuntime = appRuntime,
             workspaceFacade = workspaceFacade,
             appointmentBoardFacade = appointmentBoardFacade,
+            navigationViewModel = DesktopNavigationViewModel(),
             dashboardSummaryViewModel = DashboardSummaryViewModel(appRuntime.reportService, initialBoardDate),
             patientSearchViewModel = PatientSearchViewModel(workspaceFacade),
             appointmentBoardViewModel = AppointmentBoardViewModel(appointmentBoardFacade, initialBoardDate),
