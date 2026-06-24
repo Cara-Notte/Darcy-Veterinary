@@ -1,7 +1,9 @@
 package darcy.veterinary.presentation.desktop
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Card
@@ -30,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
@@ -38,11 +42,17 @@ import androidx.compose.ui.window.application
 import darcy.veterinary.application.AppointmentBoardRow
 import darcy.veterinary.application.ClinicOverviewReport
 import darcy.veterinary.domain.model.AppointmentStatus
+import darcy.veterinary.presentation.desktop.theme.DarcyColor
+import darcy.veterinary.presentation.desktop.theme.DarcyVetTheme
+import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
 import darcy.veterinary.presentation.desktop.viewmodel.DashboardSummaryState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopNavigationState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopSection
-import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
 import java.time.format.DateTimeFormatter
+
+private val LargeGlassShape = RoundedCornerShape(28.dp)
+private val MediumGlassShape = RoundedCornerShape(20.dp)
+private val SmallGlassShape = RoundedCornerShape(14.dp)
 
 fun main() = application {
     Window(
@@ -81,9 +91,18 @@ fun DarcyVetDesktopApp() {
         loadAppointmentBoard()
     }
 
-    MaterialTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            Row(modifier = Modifier.fillMaxSize()) {
+    DarcyVetTheme {
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarcyColor.AppBackground),
+            color = DarcyColor.AppBackground
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(DarcyColor.AppBackground)
+            ) {
                 Sidebar(
                     navigationState = navigationState,
                     onOpenDashboard = {
@@ -162,15 +181,16 @@ private fun Sidebar(
 ) {
     Column(
         modifier = Modifier
-            .width(240.dp)
+            .width(264.dp)
             .fillMaxHeight()
-            .background(MaterialTheme.colors.primary.copy(alpha = 0.08f))
-            .padding(16.dp),
+            .background(DarcyColor.GlassSurface, LargeGlassShape)
+            .border(BorderStroke(1.dp, DarcyColor.GlassBorder), LargeGlassShape)
+            .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text("Darcy Vet", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
-        Text("Desktop clinic workspace", style = MaterialTheme.typography.caption)
-        Spacer(Modifier.height(16.dp))
+        Text("Darcy Vet", style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
+        Text("Local clinic workstation", style = MaterialTheme.typography.caption, color = DarcyColor.TextMuted)
+        Spacer(Modifier.height(18.dp))
         SidebarItem("Dashboard", navigationState.currentSection == DesktopSection.DASHBOARD, onOpenDashboard)
         SidebarItem("Owners & Patients", navigationState.currentSection == DesktopSection.OWNERS_AND_PATIENTS, onOpenOwnersPatients)
         SidebarItem("Appointments", navigationState.currentSection == DesktopSection.APPOINTMENTS, onOpenAppointments)
@@ -183,9 +203,21 @@ private fun Sidebar(
 
 @Composable
 private fun SidebarItem(label: String, selected: Boolean, onClick: () -> Unit) {
-    val prefix = if (selected) "• " else ""
-    TextButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-        Text(prefix + label, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+    val itemShape = SmallGlassShape
+    val background = if (selected) DarcyColor.GlassSurfaceStrong else Color.Transparent
+    val border = if (selected) DarcyColor.ClinicalAmber.copy(alpha = 0.62f) else Color.Transparent
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(background, itemShape)
+            .border(BorderStroke(1.dp, border), itemShape)
+    ) {
+        Text(
+            label,
+            color = if (selected) DarcyColor.ClinicalAmber else DarcyColor.TextSecondary,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }
 
@@ -209,9 +241,9 @@ private fun MainContent(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(navigationState.title, style = MaterialTheme.typography.h4, fontWeight = FontWeight.Bold)
-        Text("Stage 3 desktop shell bound to tested view-model state.", style = MaterialTheme.typography.body2)
-        Divider()
+        Text(navigationState.title, style = MaterialTheme.typography.h4, fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
+        Text("Stage 3 desktop shell bound to tested clinic workflow state.", style = MaterialTheme.typography.body2, color = DarcyColor.TextMuted)
+        Divider(color = DarcyColor.GlassBorder)
         when (navigationState.currentSection) {
             DesktopSection.DASHBOARD -> DashboardPanel(dashboardState, onRefreshDashboard)
             DesktopSection.OWNERS_AND_PATIENTS -> OwnersPatientsPanel(onStartOwner, onStartPatient)
@@ -224,7 +256,7 @@ private fun MainContent(
             )
             DesktopSection.BILLING -> PlaceholderWorkflowPanel(
                 title = "Billing & Checkout",
-                body = "Create invoices and confirm payment/void actions using BillingCheckoutViewModel.",
+                body = "Create invoices and confirm payment or void actions using BillingCheckoutViewModel.",
                 actionLabel = "New invoice",
                 onAction = onStartInvoice
             )
@@ -262,25 +294,25 @@ private fun DashboardPanel(state: DashboardSummaryState, onRefresh: () -> Unit) 
 
 @Composable
 private fun DashboardReportDetails(report: ClinicOverviewReport) {
-    Card(modifier = Modifier.fillMaxWidth(), elevation = 2.dp) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Report date: ${report.reportDate}", fontWeight = FontWeight.Bold)
-            Text("Total appointments: ${report.totalAppointments}")
-            Text("Completed appointments: ${report.completedAppointments}")
-            Text("Cancelled appointments: ${report.cancelledAppointments}")
-            Text("Paid invoices: ${report.paidInvoices}")
-            Text("Voided invoices: ${report.voidedInvoices}")
-            Text("Collected revenue: ${report.paidRevenue}")
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Report date: ${report.reportDate}", fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
+            MutedText("Total appointments: ${report.totalAppointments}")
+            MutedText("Completed appointments: ${report.completedAppointments}")
+            MutedText("Cancelled appointments: ${report.cancelledAppointments}")
+            MutedText("Paid invoices: ${report.paidInvoices}")
+            MutedText("Voided invoices: ${report.voidedInvoices}")
+            MutedText("Collected revenue: ${report.paidRevenue}")
         }
     }
 }
 
 @Composable
 private fun MetricCard(label: String, value: String, modifier: Modifier = Modifier) {
-    Card(modifier = modifier, elevation = 2.dp) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(label, style = MaterialTheme.typography.caption)
-            Text(value, style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold)
+    GlassCard(modifier = modifier) {
+        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(label, style = MaterialTheme.typography.caption, color = DarcyColor.TextMuted)
+            Text(value, style = MaterialTheme.typography.h5, fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
         }
     }
 }
@@ -288,12 +320,12 @@ private fun MetricCard(label: String, value: String, modifier: Modifier = Modifi
 @Composable
 private fun OwnersPatientsPanel(onStartOwner: () -> Unit, onStartPatient: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Owner and patient workflows are ready at the view-model layer.")
+        MutedText("Owner and patient workflows are ready at the view-model layer.")
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(onClick = onStartOwner) { Text("New owner") }
             Button(onClick = onStartPatient) { Text("New patient") }
         }
-        EmptyState("Search/chart UI will bind to PatientSearchViewModel, OwnerFormViewModel, and PatientFormViewModel next.")
+        EmptyState("Search and chart UI will bind to PatientSearchViewModel, OwnerFormViewModel, and PatientFormViewModel next.")
     }
 }
 
@@ -321,25 +353,25 @@ private fun AppointmentBoardPanel(
                     board.rows.forEach { AppointmentRowCard(it) }
                 }
             }
-        }
-        state.emptyStateMessage?.let { EmptyState(it) }
+        } ?: state.emptyStateMessage?.let { EmptyState(it) }
         state.errorMessage?.let { ErrorState(it) }
     }
 }
 
 @Composable
 private fun AppointmentRowCard(row: AppointmentBoardRow) {
-    Card(modifier = Modifier.fillMaxWidth(), elevation = 2.dp) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 "${row.scheduledAt.format(DateTimeFormatter.ofPattern("HH:mm"))} — ${row.patientName}",
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = DarcyColor.TextPrimary
             )
-            Text("Owner: ${row.ownerName} (${row.ownerPhoneNumber})")
-            Text("Reason: ${row.reason}")
-            Text("Status: ${formatStatus(row.status)}")
+            MutedText("Owner: ${row.ownerName} (${row.ownerPhoneNumber})")
+            MutedText("Reason: ${row.reason}")
+            MutedText("Status: ${formatStatus(row.status)}")
             if (row.hasPatientAlerts) {
-                Text("Patient alert: allergies or medical conditions recorded", color = MaterialTheme.colors.error)
+                Text("Patient alert: allergies or medical conditions recorded", color = DarcyColor.SemanticRed)
             }
         }
     }
@@ -350,13 +382,25 @@ private fun formatStatus(status: AppointmentStatus): String =
 
 @Composable
 private fun PlaceholderWorkflowPanel(title: String, body: String, actionLabel: String, onAction: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth(), elevation = 2.dp) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(title, style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold)
-            Text(body)
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(title, style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
+            MutedText(body)
             Button(onClick = onAction) { Text(actionLabel) }
         }
     }
+}
+
+@Composable
+private fun GlassCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Card(
+        modifier = modifier.border(BorderStroke(1.dp, DarcyColor.GlassBorder), MediumGlassShape),
+        shape = MediumGlassShape,
+        backgroundColor = DarcyColor.GlassSurface,
+        contentColor = DarcyColor.TextPrimary,
+        elevation = 10.dp,
+        content = content
+    )
 }
 
 @Composable
@@ -364,14 +408,21 @@ private fun EmptyState(message: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .background(DarcyColor.GlassSurfaceSubtle, MediumGlassShape)
+            .border(BorderStroke(1.dp, DarcyColor.GlassBorder), MediumGlassShape)
+            .padding(18.dp),
         contentAlignment = Alignment.CenterStart
     ) {
-        Text(message, style = MaterialTheme.typography.body2)
+        Text(message, style = MaterialTheme.typography.body2, color = DarcyColor.TextMuted)
     }
 }
 
 @Composable
 private fun ErrorState(message: String) {
-    Text(message, color = MaterialTheme.colors.error, fontWeight = FontWeight.Bold)
+    Text(message, color = DarcyColor.SemanticRed, fontWeight = FontWeight.Bold)
+}
+
+@Composable
+private fun MutedText(text: String) {
+    Text(text, style = MaterialTheme.typography.body2, color = DarcyColor.TextSecondary)
 }
