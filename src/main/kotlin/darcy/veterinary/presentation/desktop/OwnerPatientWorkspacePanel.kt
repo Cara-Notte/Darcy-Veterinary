@@ -21,19 +21,41 @@ import darcy.veterinary.application.OwnerLookupRow
 import darcy.veterinary.application.PatientChartViewData
 import darcy.veterinary.application.PatientLookupRow
 import darcy.veterinary.application.RecordTimelineRow
+import darcy.veterinary.domain.model.PetSex
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
+import darcy.veterinary.presentation.desktop.viewmodel.DesktopWorkspaceMode
+import darcy.veterinary.presentation.desktop.viewmodel.OwnerFormState
+import darcy.veterinary.presentation.desktop.viewmodel.PatientFormState
 import darcy.veterinary.presentation.desktop.viewmodel.PatientSearchState
 import java.time.format.DateTimeFormatter
 
 @Composable
 internal fun OwnerPatientWorkspacePanel(
     state: PatientSearchState,
+    workspaceMode: DesktopWorkspaceMode,
+    ownerFormState: OwnerFormState,
+    patientFormState: PatientFormState,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     onOpenPatientChart: (String, String?) -> Unit,
     onClearPatientChart: () -> Unit,
     onStartOwner: () -> Unit,
     onStartPatient: (String?) -> Unit,
+    onOwnerNameChange: (String) -> Unit,
+    onOwnerPhoneChange: (String) -> Unit,
+    onOwnerEmailChange: (String) -> Unit,
+    onSaveOwner: () -> Unit,
+    onPatientOwnerIdChange: (String) -> Unit,
+    onPatientNameChange: (String) -> Unit,
+    onPatientSpeciesChange: (String) -> Unit,
+    onPatientBreedChange: (String) -> Unit,
+    onPatientAgeChange: (String) -> Unit,
+    onPatientSexChange: (PetSex?) -> Unit,
+    onPatientDateOfBirthChange: (String) -> Unit,
+    onPatientWeightChange: (String) -> Unit,
+    onPatientAllergiesChange: (String) -> Unit,
+    onPatientConditionsChange: (String) -> Unit,
+    onSavePatient: () -> Unit,
     onScheduleAppointment: (String?) -> Unit,
     onStartMedicalRecord: (String?) -> Unit,
     onStartInvoice: (String?) -> Unit
@@ -50,6 +72,31 @@ internal fun OwnerPatientWorkspacePanel(
             Button(onClick = onSearch) { Text("Search") }
             Button(onClick = onStartOwner) { Text("New owner") }
             Button(onClick = { onStartPatient(null) }) { Text("New patient") }
+        }
+        when (workspaceMode) {
+            DesktopWorkspaceMode.CREATE_OWNER,
+            DesktopWorkspaceMode.EDIT_OWNER -> OwnerProfileFormPanel(
+                state = ownerFormState,
+                onFullNameChange = onOwnerNameChange,
+                onPhoneChange = onOwnerPhoneChange,
+                onEmailChange = onOwnerEmailChange,
+                onSave = onSaveOwner
+            )
+            DesktopWorkspaceMode.CREATE_PATIENT -> PatientProfileFormPanel(
+                state = patientFormState,
+                onOwnerIdChange = onPatientOwnerIdChange,
+                onNameChange = onPatientNameChange,
+                onSpeciesChange = onPatientSpeciesChange,
+                onBreedChange = onPatientBreedChange,
+                onAgeChange = onPatientAgeChange,
+                onSexChange = onPatientSexChange,
+                onDateOfBirthChange = onPatientDateOfBirthChange,
+                onWeightChange = onPatientWeightChange,
+                onAllergiesChange = onPatientAllergiesChange,
+                onConditionsChange = onPatientConditionsChange,
+                onSave = onSavePatient
+            )
+            else -> Unit
         }
         state.validationMessage?.let { ErrorState(it) }
         state.errorMessage?.let { ErrorState(it) }

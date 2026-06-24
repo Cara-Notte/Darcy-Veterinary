@@ -42,12 +42,15 @@ import androidx.compose.ui.window.application
 import darcy.veterinary.application.AppointmentBoardRow
 import darcy.veterinary.application.ClinicOverviewReport
 import darcy.veterinary.domain.model.AppointmentStatus
+import darcy.veterinary.domain.model.PetSex
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
 import darcy.veterinary.presentation.desktop.theme.DarcyVetTheme
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
 import darcy.veterinary.presentation.desktop.viewmodel.DashboardSummaryState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopNavigationState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopSection
+import darcy.veterinary.presentation.desktop.viewmodel.OwnerFormState
+import darcy.veterinary.presentation.desktop.viewmodel.PatientFormState
 import darcy.veterinary.presentation.desktop.viewmodel.PatientSearchState
 import java.time.format.DateTimeFormatter
 
@@ -73,6 +76,8 @@ fun DarcyVetDesktopApp() {
     var dashboardState by remember { mutableStateOf(runtime.dashboardSummaryViewModel.state) }
     var appointmentBoardState by remember { mutableStateOf(runtime.appointmentBoardViewModel.state) }
     var patientSearchState by remember { mutableStateOf(runtime.patientSearchViewModel.state) }
+    var ownerFormState by remember { mutableStateOf(runtime.ownerFormViewModel.state) }
+    var patientFormState by remember { mutableStateOf(runtime.patientFormViewModel.state) }
 
     fun refreshNavigation() {
         navigationState = runtime.navigationViewModel.state
@@ -80,6 +85,14 @@ fun DarcyVetDesktopApp() {
 
     fun refreshPatientSearch() {
         patientSearchState = runtime.patientSearchViewModel.state
+    }
+
+    fun refreshOwnerForm() {
+        ownerFormState = runtime.ownerFormViewModel.state
+    }
+
+    fun refreshPatientForm() {
+        patientFormState = runtime.patientFormViewModel.state
     }
 
     fun loadDashboard() {
@@ -147,6 +160,8 @@ fun DarcyVetDesktopApp() {
                     dashboardState = dashboardState,
                     appointmentBoardState = appointmentBoardState,
                     patientSearchState = patientSearchState,
+                    ownerFormState = ownerFormState,
+                    patientFormState = patientFormState,
                     onRefreshDashboard = ::loadDashboard,
                     onRefreshAppointments = ::loadAppointmentBoard,
                     onSearchQueryChange = { query ->
@@ -168,12 +183,76 @@ fun DarcyVetDesktopApp() {
                         refreshPatientSearch()
                     },
                     onStartOwner = {
+                        runtime.ownerFormViewModel.startCreate()
+                        refreshOwnerForm()
                         runtime.navigationViewModel.startNewOwner()
                         refreshNavigation()
                     },
                     onStartPatient = { ownerId ->
+                        runtime.patientFormViewModel.startCreate(ownerId)
+                        refreshPatientForm()
                         runtime.navigationViewModel.startNewPatient(ownerId)
                         refreshNavigation()
+                    },
+                    onOwnerNameChange = { value ->
+                        runtime.ownerFormViewModel.updateFullName(value)
+                        refreshOwnerForm()
+                    },
+                    onOwnerPhoneChange = { value ->
+                        runtime.ownerFormViewModel.updatePhoneNumber(value)
+                        refreshOwnerForm()
+                    },
+                    onOwnerEmailChange = { value ->
+                        runtime.ownerFormViewModel.updateEmail(value)
+                        refreshOwnerForm()
+                    },
+                    onSaveOwner = {
+                        runtime.ownerFormViewModel.save()
+                        refreshOwnerForm()
+                    },
+                    onPatientOwnerIdChange = { value ->
+                        runtime.patientFormViewModel.updateOwnerId(value)
+                        refreshPatientForm()
+                    },
+                    onPatientNameChange = { value ->
+                        runtime.patientFormViewModel.updateName(value)
+                        refreshPatientForm()
+                    },
+                    onPatientSpeciesChange = { value ->
+                        runtime.patientFormViewModel.updateSpecies(value)
+                        refreshPatientForm()
+                    },
+                    onPatientBreedChange = { value ->
+                        runtime.patientFormViewModel.updateBreed(value)
+                        refreshPatientForm()
+                    },
+                    onPatientAgeChange = { value ->
+                        runtime.patientFormViewModel.updateAge(value)
+                        refreshPatientForm()
+                    },
+                    onPatientSexChange = { value ->
+                        runtime.patientFormViewModel.updateSex(value)
+                        refreshPatientForm()
+                    },
+                    onPatientDateOfBirthChange = { value ->
+                        runtime.patientFormViewModel.updateDateOfBirth(value)
+                        refreshPatientForm()
+                    },
+                    onPatientWeightChange = { value ->
+                        runtime.patientFormViewModel.updateWeightKg(value)
+                        refreshPatientForm()
+                    },
+                    onPatientAllergiesChange = { value ->
+                        runtime.patientFormViewModel.updateAllergies(value)
+                        refreshPatientForm()
+                    },
+                    onPatientConditionsChange = { value ->
+                        runtime.patientFormViewModel.updateMedicalConditions(value)
+                        refreshPatientForm()
+                    },
+                    onSavePatient = {
+                        runtime.patientFormViewModel.save()
+                        refreshPatientForm()
                     },
                     onScheduleAppointment = { patientId ->
                         runtime.navigationViewModel.scheduleAppointment(patientId)
@@ -252,6 +331,8 @@ private fun MainContent(
     dashboardState: DashboardSummaryState,
     appointmentBoardState: AppointmentBoardState,
     patientSearchState: PatientSearchState,
+    ownerFormState: OwnerFormState,
+    patientFormState: PatientFormState,
     onRefreshDashboard: () -> Unit,
     onRefreshAppointments: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
@@ -260,6 +341,21 @@ private fun MainContent(
     onClearPatientChart: () -> Unit,
     onStartOwner: () -> Unit,
     onStartPatient: (String?) -> Unit,
+    onOwnerNameChange: (String) -> Unit,
+    onOwnerPhoneChange: (String) -> Unit,
+    onOwnerEmailChange: (String) -> Unit,
+    onSaveOwner: () -> Unit,
+    onPatientOwnerIdChange: (String) -> Unit,
+    onPatientNameChange: (String) -> Unit,
+    onPatientSpeciesChange: (String) -> Unit,
+    onPatientBreedChange: (String) -> Unit,
+    onPatientAgeChange: (String) -> Unit,
+    onPatientSexChange: (PetSex?) -> Unit,
+    onPatientDateOfBirthChange: (String) -> Unit,
+    onPatientWeightChange: (String) -> Unit,
+    onPatientAllergiesChange: (String) -> Unit,
+    onPatientConditionsChange: (String) -> Unit,
+    onSavePatient: () -> Unit,
     onScheduleAppointment: (String?) -> Unit,
     onStartInvoice: (String?) -> Unit,
     onStartMedicalRecord: (String?) -> Unit
@@ -278,12 +374,30 @@ private fun MainContent(
             DesktopSection.DASHBOARD -> DashboardPanel(dashboardState, onRefreshDashboard)
             DesktopSection.OWNERS_AND_PATIENTS -> OwnerPatientWorkspacePanel(
                 state = patientSearchState,
+                workspaceMode = navigationState.activeWorkspaceMode,
+                ownerFormState = ownerFormState,
+                patientFormState = patientFormState,
                 onQueryChange = onSearchQueryChange,
                 onSearch = onSearchPatients,
                 onOpenPatientChart = onOpenPatientChart,
                 onClearPatientChart = onClearPatientChart,
                 onStartOwner = onStartOwner,
                 onStartPatient = onStartPatient,
+                onOwnerNameChange = onOwnerNameChange,
+                onOwnerPhoneChange = onOwnerPhoneChange,
+                onOwnerEmailChange = onOwnerEmailChange,
+                onSaveOwner = onSaveOwner,
+                onPatientOwnerIdChange = onPatientOwnerIdChange,
+                onPatientNameChange = onPatientNameChange,
+                onPatientSpeciesChange = onPatientSpeciesChange,
+                onPatientBreedChange = onPatientBreedChange,
+                onPatientAgeChange = onPatientAgeChange,
+                onPatientSexChange = onPatientSexChange,
+                onPatientDateOfBirthChange = onPatientDateOfBirthChange,
+                onPatientWeightChange = onPatientWeightChange,
+                onPatientAllergiesChange = onPatientAllergiesChange,
+                onPatientConditionsChange = onPatientConditionsChange,
+                onSavePatient = onSavePatient,
                 onScheduleAppointment = onScheduleAppointment,
                 onStartMedicalRecord = onStartMedicalRecord,
                 onStartInvoice = onStartInvoice
