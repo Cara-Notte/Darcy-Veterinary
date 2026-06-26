@@ -18,10 +18,12 @@ import darcy.veterinary.application.AppointmentBoardRow
 import darcy.veterinary.domain.model.AppointmentStatus
 import darcy.veterinary.domain.model.VisitType
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
+import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardAction
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormField
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormMode
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormState
+import darcy.veterinary.presentation.desktop.viewmodel.PendingAppointmentAction
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -31,6 +33,10 @@ internal fun AppointmentWorkspacePanel(
     onRefresh: () -> Unit,
     onStartCreate: (String?) -> Unit,
     onLoadAppointment: (String) -> Unit,
+    onRequestComplete: (String) -> Unit,
+    onRequestCancel: (String) -> Unit,
+    onConfirmPendingAction: () -> Unit,
+    onDismissPendingAction: () -> Unit,
     onPatientIdChange: (String) -> Unit,
     onScheduledAtChange: (String) -> Unit,
     onReasonChange: (String) -> Unit,
@@ -62,10 +68,25 @@ internal fun AppointmentWorkspacePanel(
                 EmptyState(boardState.emptyStateMessage ?: "No appointments to show.")
             } else {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    board.rows.forEach { row -> AppointmentBoardRowCard(row, onLoadAppointment) }
+                    board.rows.forEach { row ->
+                        AppointmentBoardRowCard(
+                            row = row,
+                            onLoadAppointment = onLoadAppointment,
+                            onRequestComplete = onRequestComplete,
+                            onRequestCancel = onRequestCancel
+                        )
+                    }
                 }
             }
         } ?: boardState.emptyStateMessage?.let { EmptyState(it) }
+        boardState.pendingAction?.let { pending ->
+            PendingAppointmentActionPrompt(
+                pending = pending,
+                onConfirmPendingAction = onConfirmPendingAction,
+                onDismissPendingAction = onDismissPendingAction
+            )
+        }
+        boardState.successMessage?.let { Text(it, color = DarcyColor.ClinicalAmber, fontWeight = FontWeight.Bold) }
         boardState.errorMessage?.let { ErrorState(it) }
     }
 }
@@ -168,7 +189,12 @@ private fun VisitTypeSelector(selected: VisitType, onVisitTypeChange: (VisitType
 }
 
 @Composable
-private fun AppointmentBoardRowCard(row: AppointmentBoardRow, onLoadAppointment: (String) -> Unit) {
+private fun AppointmentBoardRowCard(
+    row: AppointmentBoardRow,
+    onLoadAppointment: (String) -> Unit,
+    onRequestComplete: (String) -> Unit,
+    onRequestCancel: (String) -> Unit
+) {
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
@@ -185,7 +211,33 @@ private fun AppointmentBoardRowCard(row: AppointmentBoardRow, onLoadAppointment:
                 Text("Patient alert: allergies or medical conditions recorded", color = DarcyColor.SemanticRed)
             }
             if (row.status == AppointmentStatus.SCHEDULED) {
-                TextButton(onClick = { onLoadAppointment(row.id) }) { Text("Edit appointment") }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    TextButton(onClick = { onLoadAppointment(row.id) }) { Text("Edit appointment") }
+                    TextButton(onClick = { onRequestComplete(row.id) }) { Text("Complete") }
+                    TextButton(onClick = { onRequestCancel(row.id) }) { Text("Cancel") }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PendingAppointmentActionPrompt(
+    pending: PendingAppointmentAction,
+    onConfirmPendingAction: () -> Unit,
+    onDismissPendingAction: () -> Unit
+) {
+    val label = when (pending.action) {
+        AppointmentBoardAction.COMPLETE -> "mark this appointment as completed"
+        AppointmentBoardAction.CANCEL -> "cancel this appointment"
+    }
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Confirm appointment action", fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
+            MutedText("Confirm to $label for ${pending.patientName} at ${pending.scheduledAt}.")
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = onConfirmPendingAction) { Text("Confirm") }
+                TextButton(onClick = onDismissPendingAction) { Text("Cancel") }
             }
         }
     }
