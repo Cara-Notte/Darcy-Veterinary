@@ -43,9 +43,11 @@ import darcy.veterinary.application.AppointmentBoardRow
 import darcy.veterinary.application.ClinicOverviewReport
 import darcy.veterinary.domain.model.AppointmentStatus
 import darcy.veterinary.domain.model.PetSex
+import darcy.veterinary.domain.model.VisitType
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
 import darcy.veterinary.presentation.desktop.theme.DarcyVetTheme
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
+import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormState
 import darcy.veterinary.presentation.desktop.viewmodel.DashboardSummaryState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopNavigationState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopSection
@@ -75,12 +77,17 @@ fun DarcyVetDesktopApp() {
     var navigationState by remember { mutableStateOf(runtime.navigationViewModel.state) }
     var dashboardState by remember { mutableStateOf(runtime.dashboardSummaryViewModel.state) }
     var appointmentBoardState by remember { mutableStateOf(runtime.appointmentBoardViewModel.state) }
+    var appointmentFormState by remember { mutableStateOf(runtime.appointmentFormViewModel.state) }
     var patientSearchState by remember { mutableStateOf(runtime.patientSearchViewModel.state) }
     var ownerFormState by remember { mutableStateOf(runtime.ownerFormViewModel.state) }
     var patientFormState by remember { mutableStateOf(runtime.patientFormViewModel.state) }
 
     fun refreshNavigation() {
         navigationState = runtime.navigationViewModel.state
+    }
+
+    fun refreshAppointmentForm() {
+        appointmentFormState = runtime.appointmentFormViewModel.state
     }
 
     fun refreshPatientSearch() {
@@ -103,6 +110,13 @@ fun DarcyVetDesktopApp() {
     fun loadAppointmentBoard() {
         runtime.appointmentBoardViewModel.load()
         appointmentBoardState = runtime.appointmentBoardViewModel.state
+    }
+
+    fun startAppointment(patientId: String?) {
+        runtime.appointmentFormViewModel.startCreate(patientId)
+        refreshAppointmentForm()
+        runtime.navigationViewModel.scheduleAppointment(patientId)
+        refreshNavigation()
     }
 
     LaunchedEffect(Unit) {
@@ -159,11 +173,44 @@ fun DarcyVetDesktopApp() {
                     navigationState = navigationState,
                     dashboardState = dashboardState,
                     appointmentBoardState = appointmentBoardState,
+                    appointmentFormState = appointmentFormState,
                     patientSearchState = patientSearchState,
                     ownerFormState = ownerFormState,
                     patientFormState = patientFormState,
                     onRefreshDashboard = ::loadDashboard,
                     onRefreshAppointments = ::loadAppointmentBoard,
+                    onStartAppointment = ::startAppointment,
+                    onLoadAppointment = { appointmentId ->
+                        runtime.appointmentFormViewModel.load(appointmentId)
+                        refreshAppointmentForm()
+                        runtime.navigationViewModel.editAppointment(appointmentId, runtime.appointmentFormViewModel.state.patientId)
+                        refreshNavigation()
+                    },
+                    onAppointmentPatientIdChange = { value ->
+                        runtime.appointmentFormViewModel.updatePatientId(value)
+                        refreshAppointmentForm()
+                    },
+                    onAppointmentScheduledAtChange = { value ->
+                        runtime.appointmentFormViewModel.updateScheduledAt(value)
+                        refreshAppointmentForm()
+                    },
+                    onAppointmentReasonChange = { value ->
+                        runtime.appointmentFormViewModel.updateReason(value)
+                        refreshAppointmentForm()
+                    },
+                    onAppointmentVisitTypeChange = { value ->
+                        runtime.appointmentFormViewModel.updateVisitType(value)
+                        refreshAppointmentForm()
+                    },
+                    onAppointmentVeterinarianChange = { value ->
+                        runtime.appointmentFormViewModel.updateVeterinarianName(value)
+                        refreshAppointmentForm()
+                    },
+                    onSaveAppointment = {
+                        runtime.appointmentFormViewModel.save()
+                        refreshAppointmentForm()
+                        loadAppointmentBoard()
+                    },
                     onSearchQueryChange = { query ->
                         runtime.patientSearchViewModel.updateQuery(query)
                         refreshPatientSearch()
@@ -254,10 +301,6 @@ fun DarcyVetDesktopApp() {
                         runtime.patientFormViewModel.save()
                         refreshPatientForm()
                     },
-                    onScheduleAppointment = { patientId ->
-                        runtime.navigationViewModel.scheduleAppointment(patientId)
-                        refreshNavigation()
-                    },
                     onStartInvoice = { patientId ->
                         runtime.navigationViewModel.startInvoice(patientId)
                         refreshNavigation()
@@ -330,11 +373,20 @@ private fun MainContent(
     navigationState: DesktopNavigationState,
     dashboardState: DashboardSummaryState,
     appointmentBoardState: AppointmentBoardState,
+    appointmentFormState: AppointmentFormState,
     patientSearchState: PatientSearchState,
     ownerFormState: OwnerFormState,
     patientFormState: PatientFormState,
     onRefreshDashboard: () -> Unit,
     onRefreshAppointments: () -> Unit,
+    onStartAppointment: (String?) -> Unit,
+    onLoadAppointment: (String) -> Unit,
+    onAppointmentPatientIdChange: (String) -> Unit,
+    onAppointmentScheduledAtChange: (String) -> Unit,
+    onAppointmentReasonChange: (String) -> Unit,
+    onAppointmentVisitTypeChange: (VisitType) -> Unit,
+    onAppointmentVeterinarianChange: (String) -> Unit,
+    onSaveAppointment: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearchPatients: () -> Unit,
     onOpenPatientChart: (String, String?) -> Unit,
@@ -356,7 +408,6 @@ private fun MainContent(
     onPatientAllergiesChange: (String) -> Unit,
     onPatientConditionsChange: (String) -> Unit,
     onSavePatient: () -> Unit,
-    onScheduleAppointment: (String?) -> Unit,
     onStartInvoice: (String?) -> Unit,
     onStartMedicalRecord: (String?) -> Unit
 ) {
@@ -398,11 +449,23 @@ private fun MainContent(
                 onPatientAllergiesChange = onPatientAllergiesChange,
                 onPatientConditionsChange = onPatientConditionsChange,
                 onSavePatient = onSavePatient,
-                onScheduleAppointment = onScheduleAppointment,
+                onScheduleAppointment = onStartAppointment,
                 onStartMedicalRecord = onStartMedicalRecord,
                 onStartInvoice = onStartInvoice
             )
-            DesktopSection.APPOINTMENTS -> AppointmentBoardPanel(appointmentBoardState, onRefreshAppointments, { onScheduleAppointment(null) })
+            DesktopSection.APPOINTMENTS -> AppointmentWorkspacePanel(
+                boardState = appointmentBoardState,
+                formState = appointmentFormState,
+                onRefresh = onRefreshAppointments,
+                onStartCreate = onStartAppointment,
+                onLoadAppointment = onLoadAppointment,
+                onPatientIdChange = onAppointmentPatientIdChange,
+                onScheduledAtChange = onAppointmentScheduledAtChange,
+                onReasonChange = onAppointmentReasonChange,
+                onVisitTypeChange = onAppointmentVisitTypeChange,
+                onVeterinarianChange = onAppointmentVeterinarianChange,
+                onSave = onSaveAppointment
+            )
             DesktopSection.MEDICAL_RECORDS -> PlaceholderWorkflowPanel(
                 title = "Medical Records",
                 body = "Create and edit clinical notes using the MedicalRecordFormViewModel.",
@@ -471,57 +534,6 @@ internal fun MetricCard(label: String, value: String, modifier: Modifier = Modif
         }
     }
 }
-
-@Composable
-private fun AppointmentBoardPanel(
-    state: AppointmentBoardState,
-    onRefresh: () -> Unit,
-    onScheduleAppointment: () -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Button(onClick = onRefresh) { Text("Refresh appointments") }
-            Button(onClick = onScheduleAppointment) { Text("Schedule appointment") }
-        }
-        state.board?.let { board ->
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                MetricCard("Scheduled", board.summary.scheduledCount.toString(), Modifier.weight(1f))
-                MetricCard("Completed", board.summary.completedCount.toString(), Modifier.weight(1f))
-                MetricCard("Cancelled", board.summary.cancelledCount.toString(), Modifier.weight(1f))
-            }
-            if (board.rows.isEmpty()) {
-                EmptyState(state.emptyStateMessage ?: "No appointments to show.")
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    board.rows.forEach { AppointmentRowCard(it) }
-                }
-            }
-        } ?: state.emptyStateMessage?.let { EmptyState(it) }
-        state.errorMessage?.let { ErrorState(it) }
-    }
-}
-
-@Composable
-private fun AppointmentRowCard(row: AppointmentBoardRow) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                "${row.scheduledAt.format(DateTimeFormatter.ofPattern("HH:mm"))} — ${row.patientName}",
-                fontWeight = FontWeight.Bold,
-                color = DarcyColor.TextPrimary
-            )
-            MutedText("Owner: ${row.ownerName} (${row.ownerPhoneNumber})")
-            MutedText("Reason: ${row.reason}")
-            MutedText("Status: ${formatStatus(row.status)}")
-            if (row.hasPatientAlerts) {
-                Text("Patient alert: allergies or medical conditions recorded", color = DarcyColor.SemanticRed)
-            }
-        }
-    }
-}
-
-private fun formatStatus(status: AppointmentStatus): String =
-    status.name.lowercase().replaceFirstChar { it.uppercase() }
 
 @Composable
 private fun PlaceholderWorkflowPanel(title: String, body: String, actionLabel: String, onAction: () -> Unit) {
