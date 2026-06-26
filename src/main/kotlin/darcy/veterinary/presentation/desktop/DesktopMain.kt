@@ -187,6 +187,7 @@ fun DarcyVetDesktopApp() {
                     onOpenReports = {
                         runtime.navigationViewModel.openReports()
                         refreshNavigation()
+                        loadDashboard()
                     },
                     onOpenAdmin = {
                         runtime.navigationViewModel.openAdmin()
@@ -602,11 +603,9 @@ private fun MainContent(
                 onConfirmPendingAction = onConfirmBillingAction,
                 onDismissPendingAction = onDismissBillingAction
             )
-            DesktopSection.REPORTS -> PlaceholderWorkflowPanel(
-                title = "Reports",
-                body = "Dashboard metrics are live. Detailed report screens can bind to ClinicReportService next.",
-                actionLabel = "Refresh dashboard metrics",
-                onAction = onRefreshDashboard
+            DesktopSection.REPORTS -> ReportsWorkspacePanel(
+                state = dashboardState,
+                onRefresh = onRefreshDashboard
             )
             DesktopSection.ADMIN -> PlaceholderWorkflowPanel(
                 title = "Admin",
