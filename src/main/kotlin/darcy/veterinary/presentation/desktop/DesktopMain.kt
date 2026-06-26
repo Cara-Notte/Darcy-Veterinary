@@ -90,6 +90,10 @@ fun DarcyVetDesktopApp() {
         navigationState = runtime.navigationViewModel.state
     }
 
+    fun refreshAppointmentBoard() {
+        appointmentBoardState = runtime.appointmentBoardViewModel.state
+    }
+
     fun refreshAppointmentForm() {
         appointmentFormState = runtime.appointmentFormViewModel.state
     }
@@ -125,7 +129,7 @@ fun DarcyVetDesktopApp() {
 
     fun loadAppointmentBoard() {
         runtime.appointmentBoardViewModel.load()
-        appointmentBoardState = runtime.appointmentBoardViewModel.state
+        refreshAppointmentBoard()
     }
 
     fun startAppointment(patientId: String?) {
@@ -219,6 +223,23 @@ fun DarcyVetDesktopApp() {
                         refreshAppointmentForm()
                         runtime.navigationViewModel.editAppointment(appointmentId, runtime.appointmentFormViewModel.state.patientId)
                         refreshNavigation()
+                    },
+                    onRequestCompleteAppointment = { appointmentId ->
+                        runtime.appointmentBoardViewModel.requestCompleteAppointment(appointmentId)
+                        refreshAppointmentBoard()
+                    },
+                    onRequestCancelAppointment = { appointmentId ->
+                        runtime.appointmentBoardViewModel.requestCancelAppointment(appointmentId)
+                        refreshAppointmentBoard()
+                    },
+                    onConfirmAppointmentAction = {
+                        runtime.appointmentBoardViewModel.confirmPendingAction()
+                        refreshAppointmentBoard()
+                        loadDashboard()
+                    },
+                    onDismissAppointmentAction = {
+                        runtime.appointmentBoardViewModel.dismissPendingAction()
+                        refreshAppointmentBoard()
                     },
                     onAppointmentPatientIdChange = { value ->
                         runtime.appointmentFormViewModel.updatePatientId(value)
@@ -490,6 +511,10 @@ private fun MainContent(
     onRefreshAppointments: () -> Unit,
     onStartAppointment: (String?) -> Unit,
     onLoadAppointment: (String) -> Unit,
+    onRequestCompleteAppointment: (String) -> Unit,
+    onRequestCancelAppointment: (String) -> Unit,
+    onConfirmAppointmentAction: () -> Unit,
+    onDismissAppointmentAction: () -> Unit,
     onAppointmentPatientIdChange: (String) -> Unit,
     onAppointmentScheduledAtChange: (String) -> Unit,
     onAppointmentReasonChange: (String) -> Unit,
@@ -587,6 +612,10 @@ private fun MainContent(
                 onRefresh = onRefreshAppointments,
                 onStartCreate = onStartAppointment,
                 onLoadAppointment = onLoadAppointment,
+                onRequestComplete = onRequestCompleteAppointment,
+                onRequestCancel = onRequestCancelAppointment,
+                onConfirmPendingAction = onConfirmAppointmentAction,
+                onDismissPendingAction = onDismissAppointmentAction,
                 onPatientIdChange = onAppointmentPatientIdChange,
                 onScheduledAtChange = onAppointmentScheduledAtChange,
                 onReasonChange = onAppointmentReasonChange,
