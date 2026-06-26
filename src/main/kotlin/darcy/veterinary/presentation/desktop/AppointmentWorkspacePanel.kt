@@ -24,6 +24,7 @@ import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormField
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormMode
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormState
 import darcy.veterinary.presentation.desktop.viewmodel.PendingAppointmentAction
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -31,6 +32,8 @@ internal fun AppointmentWorkspacePanel(
     boardState: AppointmentBoardState,
     formState: AppointmentFormState,
     onRefresh: () -> Unit,
+    onSelectDate: (LocalDate) -> Unit,
+    onApplyStatusFilter: (AppointmentStatus?) -> Unit,
     onStartCreate: (String?) -> Unit,
     onLoadAppointment: (String) -> Unit,
     onRequestComplete: (String) -> Unit,
@@ -49,6 +52,11 @@ internal fun AppointmentWorkspacePanel(
             Button(onClick = onRefresh) { Text("Refresh appointments") }
             Button(onClick = { onStartCreate(null) }) { Text("Schedule appointment") }
         }
+        AppointmentBoardControls(
+            state = boardState,
+            onSelectDate = onSelectDate,
+            onApplyStatusFilter = onApplyStatusFilter
+        )
         AppointmentFormPanel(
             state = formState,
             onPatientIdChange = onPatientIdChange,
@@ -88,6 +96,46 @@ internal fun AppointmentWorkspacePanel(
         }
         boardState.successMessage?.let { Text(it, color = DarcyColor.ClinicalAmber, fontWeight = FontWeight.Bold) }
         boardState.errorMessage?.let { ErrorState(it) }
+    }
+}
+
+@Composable
+private fun AppointmentBoardControls(
+    state: AppointmentBoardState,
+    onSelectDate: (LocalDate) -> Unit,
+    onApplyStatusFilter: (AppointmentStatus?) -> Unit
+) {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Board filters", style = MaterialTheme.typography.h6, fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                TextButton(onClick = { onSelectDate(state.selectedDate.minusDays(1)) }) { Text("Previous day") }
+                TextButton(onClick = { onSelectDate(LocalDate.now()) }) { Text("Today") }
+                TextButton(onClick = { onSelectDate(state.selectedDate.plusDays(1)) }) { Text("Next day") }
+                MutedText("Selected date: ${state.selectedDate}")
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                AppointmentStatusFilterButton("All", state.statusFilter == null) { onApplyStatusFilter(null) }
+                AppointmentStatus.values().forEach { status ->
+                    AppointmentStatusFilterButton(
+                        label = formatAppointmentStatus(status),
+                        selected = state.statusFilter == status,
+                        onClick = { onApplyStatusFilter(status) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppointmentStatusFilterButton(label: String, selected: Boolean, onClick: () -> Unit) {
+    TextButton(onClick = onClick) {
+        Text(
+            text = if (selected) "• $label" else label,
+            color = if (selected) DarcyColor.ClinicalAmber else DarcyColor.TextSecondary,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+        )
     }
 }
 
