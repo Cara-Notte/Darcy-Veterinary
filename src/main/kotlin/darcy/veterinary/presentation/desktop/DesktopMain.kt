@@ -40,12 +40,14 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import darcy.veterinary.application.ClinicOverviewReport
+import darcy.veterinary.domain.model.ClinicService
 import darcy.veterinary.domain.model.PetSex
 import darcy.veterinary.domain.model.VisitType
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
 import darcy.veterinary.presentation.desktop.theme.DarcyVetTheme
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormState
+import darcy.veterinary.presentation.desktop.viewmodel.BillingCheckoutState
 import darcy.veterinary.presentation.desktop.viewmodel.DashboardSummaryState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopNavigationState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopSection
@@ -76,6 +78,7 @@ fun DarcyVetDesktopApp() {
     var dashboardState by remember { mutableStateOf(runtime.dashboardSummaryViewModel.state) }
     var appointmentBoardState by remember { mutableStateOf(runtime.appointmentBoardViewModel.state) }
     var appointmentFormState by remember { mutableStateOf(runtime.appointmentFormViewModel.state) }
+    var billingCheckoutState by remember { mutableStateOf(runtime.billingCheckoutViewModel.state) }
     var medicalRecordFormState by remember { mutableStateOf(runtime.medicalRecordFormViewModel.state) }
     var patientSearchState by remember { mutableStateOf(runtime.patientSearchViewModel.state) }
     var ownerFormState by remember { mutableStateOf(runtime.ownerFormViewModel.state) }
@@ -87,6 +90,10 @@ fun DarcyVetDesktopApp() {
 
     fun refreshAppointmentForm() {
         appointmentFormState = runtime.appointmentFormViewModel.state
+    }
+
+    fun refreshBillingCheckout() {
+        billingCheckoutState = runtime.billingCheckoutViewModel.state
     }
 
     fun refreshMedicalRecordForm() {
@@ -126,6 +133,13 @@ fun DarcyVetDesktopApp() {
         runtime.medicalRecordFormViewModel.startCreate(patientId, appointmentId)
         refreshMedicalRecordForm()
         runtime.navigationViewModel.startMedicalRecord(patientId, appointmentId)
+        refreshNavigation()
+    }
+
+    fun startInvoice(patientId: String?) {
+        runtime.billingCheckoutViewModel.startInvoice(patientId)
+        refreshBillingCheckout()
+        runtime.navigationViewModel.startInvoice(patientId)
         refreshNavigation()
     }
 
@@ -184,6 +198,7 @@ fun DarcyVetDesktopApp() {
                     dashboardState = dashboardState,
                     appointmentBoardState = appointmentBoardState,
                     appointmentFormState = appointmentFormState,
+                    billingCheckoutState = billingCheckoutState,
                     medicalRecordFormState = medicalRecordFormState,
                     patientSearchState = patientSearchState,
                     ownerFormState = ownerFormState,
@@ -254,6 +269,45 @@ fun DarcyVetDesktopApp() {
                     onSaveMedicalRecord = {
                         runtime.medicalRecordFormViewModel.save()
                         refreshMedicalRecordForm()
+                    },
+                    onStartInvoice = ::startInvoice,
+                    onBillingPatientIdChange = { value ->
+                        runtime.billingCheckoutViewModel.updatePatientId(value)
+                        refreshBillingCheckout()
+                    },
+                    onBillingIssuedAtChange = { value ->
+                        runtime.billingCheckoutViewModel.updateIssuedAt(value)
+                        refreshBillingCheckout()
+                    },
+                    onBillingToggleService = { service ->
+                        runtime.billingCheckoutViewModel.toggleService(service)
+                        refreshBillingCheckout()
+                    },
+                    onBillingClearServices = {
+                        runtime.billingCheckoutViewModel.clearServices()
+                        refreshBillingCheckout()
+                    },
+                    onCreateInvoice = {
+                        runtime.billingCheckoutViewModel.createInvoice()
+                        refreshBillingCheckout()
+                        loadDashboard()
+                    },
+                    onRequestMarkPaid = {
+                        runtime.billingCheckoutViewModel.requestMarkPaid()
+                        refreshBillingCheckout()
+                    },
+                    onRequestVoidInvoice = {
+                        runtime.billingCheckoutViewModel.requestVoidInvoice()
+                        refreshBillingCheckout()
+                    },
+                    onConfirmBillingAction = {
+                        runtime.billingCheckoutViewModel.confirmPendingAction()
+                        refreshBillingCheckout()
+                        loadDashboard()
+                    },
+                    onDismissBillingAction = {
+                        runtime.billingCheckoutViewModel.dismissPendingAction()
+                        refreshBillingCheckout()
                     },
                     onSearchQueryChange = { query ->
                         runtime.patientSearchViewModel.updateQuery(query)
@@ -344,10 +398,6 @@ fun DarcyVetDesktopApp() {
                     onSavePatient = {
                         runtime.patientFormViewModel.save()
                         refreshPatientForm()
-                    },
-                    onStartInvoice = { patientId ->
-                        runtime.navigationViewModel.startInvoice(patientId)
-                        refreshNavigation()
                     }
                 )
             }
@@ -414,6 +464,7 @@ private fun MainContent(
     dashboardState: DashboardSummaryState,
     appointmentBoardState: AppointmentBoardState,
     appointmentFormState: AppointmentFormState,
+    billingCheckoutState: BillingCheckoutState,
     medicalRecordFormState: MedicalRecordFormState,
     patientSearchState: PatientSearchState,
     ownerFormState: OwnerFormState,
@@ -437,6 +488,16 @@ private fun MainContent(
     onMedicalRecordRecordedAtChange: (String) -> Unit,
     onMedicalRecordVeterinarianChange: (String) -> Unit,
     onSaveMedicalRecord: () -> Unit,
+    onStartInvoice: (String?) -> Unit,
+    onBillingPatientIdChange: (String) -> Unit,
+    onBillingIssuedAtChange: (String) -> Unit,
+    onBillingToggleService: (ClinicService) -> Unit,
+    onBillingClearServices: () -> Unit,
+    onCreateInvoice: () -> Unit,
+    onRequestMarkPaid: () -> Unit,
+    onRequestVoidInvoice: () -> Unit,
+    onConfirmBillingAction: () -> Unit,
+    onDismissBillingAction: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearchPatients: () -> Unit,
     onOpenPatientChart: (String, String?) -> Unit,
@@ -457,8 +518,7 @@ private fun MainContent(
     onPatientWeightChange: (String) -> Unit,
     onPatientAllergiesChange: (String) -> Unit,
     onPatientConditionsChange: (String) -> Unit,
-    onSavePatient: () -> Unit,
-    onStartInvoice: (String?) -> Unit
+    onSavePatient: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -528,11 +588,19 @@ private fun MainContent(
                 onVeterinarianChange = onMedicalRecordVeterinarianChange,
                 onSave = onSaveMedicalRecord
             )
-            DesktopSection.BILLING -> PlaceholderWorkflowPanel(
-                title = "Billing & Checkout",
-                body = "Create invoices and confirm payment or void actions using BillingCheckoutViewModel.",
-                actionLabel = "New invoice",
-                onAction = { onStartInvoice(null) }
+            DesktopSection.BILLING -> BillingWorkspacePanel(
+                mode = navigationState.activeBillingMode,
+                state = billingCheckoutState,
+                onStartInvoice = { onStartInvoice(navigationState.selectedPatientId) },
+                onPatientIdChange = onBillingPatientIdChange,
+                onIssuedAtChange = onBillingIssuedAtChange,
+                onToggleService = onBillingToggleService,
+                onClearServices = onBillingClearServices,
+                onCreateInvoice = onCreateInvoice,
+                onRequestMarkPaid = onRequestMarkPaid,
+                onRequestVoid = onRequestVoidInvoice,
+                onConfirmPendingAction = onConfirmBillingAction,
+                onDismissPendingAction = onDismissBillingAction
             )
             DesktopSection.REPORTS -> PlaceholderWorkflowPanel(
                 title = "Reports",
