@@ -45,6 +45,7 @@ import darcy.veterinary.domain.model.PetSex
 import darcy.veterinary.domain.model.VisitType
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
 import darcy.veterinary.presentation.desktop.theme.DarcyVetTheme
+import darcy.veterinary.presentation.desktop.viewmodel.AdminMaintenanceState
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardState
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormState
 import darcy.veterinary.presentation.desktop.viewmodel.BillingCheckoutState
@@ -83,6 +84,7 @@ fun DarcyVetDesktopApp() {
     var patientSearchState by remember { mutableStateOf(runtime.patientSearchViewModel.state) }
     var ownerFormState by remember { mutableStateOf(runtime.ownerFormViewModel.state) }
     var patientFormState by remember { mutableStateOf(runtime.patientFormViewModel.state) }
+    var adminMaintenanceState by remember { mutableStateOf(runtime.adminMaintenanceViewModel.state) }
 
     fun refreshNavigation() {
         navigationState = runtime.navigationViewModel.state
@@ -110,6 +112,10 @@ fun DarcyVetDesktopApp() {
 
     fun refreshPatientForm() {
         patientFormState = runtime.patientFormViewModel.state
+    }
+
+    fun refreshAdminMaintenance() {
+        adminMaintenanceState = runtime.adminMaintenanceViewModel.state
     }
 
     fun loadDashboard() {
@@ -204,6 +210,7 @@ fun DarcyVetDesktopApp() {
                     patientSearchState = patientSearchState,
                     ownerFormState = ownerFormState,
                     patientFormState = patientFormState,
+                    adminMaintenanceState = adminMaintenanceState,
                     onRefreshDashboard = ::loadDashboard,
                     onRefreshAppointments = ::loadAppointmentBoard,
                     onStartAppointment = ::startAppointment,
@@ -309,6 +316,14 @@ fun DarcyVetDesktopApp() {
                     onDismissBillingAction = {
                         runtime.billingCheckoutViewModel.dismissPendingAction()
                         refreshBillingCheckout()
+                    },
+                    onCheckDatabaseHealth = {
+                        runtime.adminMaintenanceViewModel.checkHealth()
+                        refreshAdminMaintenance()
+                    },
+                    onCreateDatabaseBackup = {
+                        runtime.adminMaintenanceViewModel.createBackup()
+                        refreshAdminMaintenance()
                     },
                     onSearchQueryChange = { query ->
                         runtime.patientSearchViewModel.updateQuery(query)
@@ -470,6 +485,7 @@ private fun MainContent(
     patientSearchState: PatientSearchState,
     ownerFormState: OwnerFormState,
     patientFormState: PatientFormState,
+    adminMaintenanceState: AdminMaintenanceState,
     onRefreshDashboard: () -> Unit,
     onRefreshAppointments: () -> Unit,
     onStartAppointment: (String?) -> Unit,
@@ -499,6 +515,8 @@ private fun MainContent(
     onRequestVoidInvoice: () -> Unit,
     onConfirmBillingAction: () -> Unit,
     onDismissBillingAction: () -> Unit,
+    onCheckDatabaseHealth: () -> Unit,
+    onCreateDatabaseBackup: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearchPatients: () -> Unit,
     onOpenPatientChart: (String, String?) -> Unit,
@@ -607,11 +625,10 @@ private fun MainContent(
                 state = dashboardState,
                 onRefresh = onRefreshDashboard
             )
-            DesktopSection.ADMIN -> PlaceholderWorkflowPanel(
-                title = "Admin",
-                body = "Maintenance tools should live here later: health checks, backup, restore, and import/export.",
-                actionLabel = "No admin action yet",
-                onAction = {}
+            DesktopSection.ADMIN -> AdminMaintenanceWorkspacePanel(
+                state = adminMaintenanceState,
+                onCheckHealth = onCheckDatabaseHealth,
+                onCreateBackup = onCreateDatabaseBackup
             )
         }
     }

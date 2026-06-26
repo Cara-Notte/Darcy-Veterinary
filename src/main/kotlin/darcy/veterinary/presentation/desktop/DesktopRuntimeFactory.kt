@@ -5,6 +5,7 @@ import darcy.veterinary.application.AppRuntimeFactory
 import darcy.veterinary.application.AppointmentBoardFacade
 import darcy.veterinary.application.ClinicWorkspaceFacade
 import darcy.veterinary.infrastructure.database.DatabaseConfig
+import darcy.veterinary.presentation.desktop.viewmodel.AdminMaintenanceViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentBoardViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormViewModel
 import darcy.veterinary.presentation.desktop.viewmodel.BillingCheckoutViewModel
@@ -28,7 +29,8 @@ data class DesktopRuntime(
     val billingCheckoutViewModel: BillingCheckoutViewModel,
     val medicalRecordFormViewModel: MedicalRecordFormViewModel,
     val ownerFormViewModel: OwnerFormViewModel,
-    val patientFormViewModel: PatientFormViewModel
+    val patientFormViewModel: PatientFormViewModel,
+    val adminMaintenanceViewModel: AdminMaintenanceViewModel
 )
 
 object DesktopRuntimeFactory {
@@ -52,7 +54,8 @@ object DesktopRuntimeFactory {
             billingCheckoutViewModel = BillingCheckoutViewModel(appRuntime.billingService),
             medicalRecordFormViewModel = MedicalRecordFormViewModel(appRuntime.medicalRecordService),
             ownerFormViewModel = OwnerFormViewModel(appRuntime.ownerService),
-            patientFormViewModel = PatientFormViewModel(appRuntime.patientService)
+            patientFormViewModel = PatientFormViewModel(appRuntime.patientService),
+            adminMaintenanceViewModel = AdminMaintenanceViewModel(appRuntime.adminMaintenanceService)
         )
     }
 }
