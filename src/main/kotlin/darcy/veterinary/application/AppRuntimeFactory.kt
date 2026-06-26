@@ -1,7 +1,9 @@
 package darcy.veterinary.application
 
+import darcy.veterinary.infrastructure.database.DatabaseBackupService
 import darcy.veterinary.infrastructure.database.DatabaseConfig
 import darcy.veterinary.infrastructure.database.DatabaseConnectionFactory
+import darcy.veterinary.infrastructure.database.DatabaseHealthCheckService
 import darcy.veterinary.infrastructure.database.DatabaseMigrator
 import darcy.veterinary.infrastructure.sqlite.SqliteAppointmentRepository
 import darcy.veterinary.infrastructure.sqlite.SqliteInvoiceRepository
@@ -40,6 +42,10 @@ object AppRuntimeFactory {
             statusHistoryRepository = invoiceStatusHistoryRepository
         )
         val reportService = ClinicReportService(ownerRepository, petRepository, appointmentRepository, invoiceRepository)
+        val adminMaintenanceService = AdminMaintenanceService(
+            healthCheckService = DatabaseHealthCheckService(config, connectionFactory),
+            backupService = DatabaseBackupService(config)
+        )
         val clinicWorkspaceFacade = ClinicWorkspaceFacade(
             ownerService = ownerService,
             patientService = patientService,
@@ -68,6 +74,7 @@ object AppRuntimeFactory {
             medicalRecordService = medicalRecordService,
             billingService = billingService,
             reportService = reportService,
+            adminMaintenanceService = adminMaintenanceService,
             clinicWorkspaceFacade = clinicWorkspaceFacade,
             appointmentBoardFacade = appointmentBoardFacade
         )
