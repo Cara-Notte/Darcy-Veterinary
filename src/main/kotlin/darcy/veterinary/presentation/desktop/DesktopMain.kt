@@ -39,9 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import darcy.veterinary.application.AppointmentBoardRow
 import darcy.veterinary.application.ClinicOverviewReport
-import darcy.veterinary.domain.model.AppointmentStatus
 import darcy.veterinary.domain.model.PetSex
 import darcy.veterinary.domain.model.VisitType
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
@@ -51,10 +49,10 @@ import darcy.veterinary.presentation.desktop.viewmodel.AppointmentFormState
 import darcy.veterinary.presentation.desktop.viewmodel.DashboardSummaryState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopNavigationState
 import darcy.veterinary.presentation.desktop.viewmodel.DesktopSection
+import darcy.veterinary.presentation.desktop.viewmodel.MedicalRecordFormState
 import darcy.veterinary.presentation.desktop.viewmodel.OwnerFormState
 import darcy.veterinary.presentation.desktop.viewmodel.PatientFormState
 import darcy.veterinary.presentation.desktop.viewmodel.PatientSearchState
-import java.time.format.DateTimeFormatter
 
 private val LargeGlassShape = RoundedCornerShape(28.dp)
 private val MediumGlassShape = RoundedCornerShape(20.dp)
@@ -78,6 +76,7 @@ fun DarcyVetDesktopApp() {
     var dashboardState by remember { mutableStateOf(runtime.dashboardSummaryViewModel.state) }
     var appointmentBoardState by remember { mutableStateOf(runtime.appointmentBoardViewModel.state) }
     var appointmentFormState by remember { mutableStateOf(runtime.appointmentFormViewModel.state) }
+    var medicalRecordFormState by remember { mutableStateOf(runtime.medicalRecordFormViewModel.state) }
     var patientSearchState by remember { mutableStateOf(runtime.patientSearchViewModel.state) }
     var ownerFormState by remember { mutableStateOf(runtime.ownerFormViewModel.state) }
     var patientFormState by remember { mutableStateOf(runtime.patientFormViewModel.state) }
@@ -88,6 +87,10 @@ fun DarcyVetDesktopApp() {
 
     fun refreshAppointmentForm() {
         appointmentFormState = runtime.appointmentFormViewModel.state
+    }
+
+    fun refreshMedicalRecordForm() {
+        medicalRecordFormState = runtime.medicalRecordFormViewModel.state
     }
 
     fun refreshPatientSearch() {
@@ -116,6 +119,13 @@ fun DarcyVetDesktopApp() {
         runtime.appointmentFormViewModel.startCreate(patientId)
         refreshAppointmentForm()
         runtime.navigationViewModel.scheduleAppointment(patientId)
+        refreshNavigation()
+    }
+
+    fun startMedicalRecord(patientId: String?, appointmentId: String? = null) {
+        runtime.medicalRecordFormViewModel.startCreate(patientId, appointmentId)
+        refreshMedicalRecordForm()
+        runtime.navigationViewModel.startMedicalRecord(patientId, appointmentId)
         refreshNavigation()
     }
 
@@ -174,6 +184,7 @@ fun DarcyVetDesktopApp() {
                     dashboardState = dashboardState,
                     appointmentBoardState = appointmentBoardState,
                     appointmentFormState = appointmentFormState,
+                    medicalRecordFormState = medicalRecordFormState,
                     patientSearchState = patientSearchState,
                     ownerFormState = ownerFormState,
                     patientFormState = patientFormState,
@@ -210,6 +221,39 @@ fun DarcyVetDesktopApp() {
                         runtime.appointmentFormViewModel.save()
                         refreshAppointmentForm()
                         loadAppointmentBoard()
+                    },
+                    onStartMedicalRecord = { patientId -> startMedicalRecord(patientId) },
+                    onMedicalRecordPatientIdChange = { value ->
+                        runtime.medicalRecordFormViewModel.updatePatientId(value)
+                        refreshMedicalRecordForm()
+                    },
+                    onMedicalRecordAppointmentIdChange = { value ->
+                        runtime.medicalRecordFormViewModel.updateAppointmentId(value)
+                        refreshMedicalRecordForm()
+                    },
+                    onMedicalRecordDiagnosisChange = { value ->
+                        runtime.medicalRecordFormViewModel.updateDiagnosis(value)
+                        refreshMedicalRecordForm()
+                    },
+                    onMedicalRecordTreatmentChange = { value ->
+                        runtime.medicalRecordFormViewModel.updateTreatment(value)
+                        refreshMedicalRecordForm()
+                    },
+                    onMedicalRecordNotesChange = { value ->
+                        runtime.medicalRecordFormViewModel.updateNotes(value)
+                        refreshMedicalRecordForm()
+                    },
+                    onMedicalRecordRecordedAtChange = { value ->
+                        runtime.medicalRecordFormViewModel.updateRecordedAt(value)
+                        refreshMedicalRecordForm()
+                    },
+                    onMedicalRecordVeterinarianChange = { value ->
+                        runtime.medicalRecordFormViewModel.updateVeterinarianName(value)
+                        refreshMedicalRecordForm()
+                    },
+                    onSaveMedicalRecord = {
+                        runtime.medicalRecordFormViewModel.save()
+                        refreshMedicalRecordForm()
                     },
                     onSearchQueryChange = { query ->
                         runtime.patientSearchViewModel.updateQuery(query)
@@ -304,10 +348,6 @@ fun DarcyVetDesktopApp() {
                     onStartInvoice = { patientId ->
                         runtime.navigationViewModel.startInvoice(patientId)
                         refreshNavigation()
-                    },
-                    onStartMedicalRecord = { patientId ->
-                        runtime.navigationViewModel.startMedicalRecord(patientId)
-                        refreshNavigation()
                     }
                 )
             }
@@ -374,6 +414,7 @@ private fun MainContent(
     dashboardState: DashboardSummaryState,
     appointmentBoardState: AppointmentBoardState,
     appointmentFormState: AppointmentFormState,
+    medicalRecordFormState: MedicalRecordFormState,
     patientSearchState: PatientSearchState,
     ownerFormState: OwnerFormState,
     patientFormState: PatientFormState,
@@ -387,6 +428,15 @@ private fun MainContent(
     onAppointmentVisitTypeChange: (VisitType) -> Unit,
     onAppointmentVeterinarianChange: (String) -> Unit,
     onSaveAppointment: () -> Unit,
+    onStartMedicalRecord: (String?) -> Unit,
+    onMedicalRecordPatientIdChange: (String) -> Unit,
+    onMedicalRecordAppointmentIdChange: (String) -> Unit,
+    onMedicalRecordDiagnosisChange: (String) -> Unit,
+    onMedicalRecordTreatmentChange: (String) -> Unit,
+    onMedicalRecordNotesChange: (String) -> Unit,
+    onMedicalRecordRecordedAtChange: (String) -> Unit,
+    onMedicalRecordVeterinarianChange: (String) -> Unit,
+    onSaveMedicalRecord: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearchPatients: () -> Unit,
     onOpenPatientChart: (String, String?) -> Unit,
@@ -408,8 +458,7 @@ private fun MainContent(
     onPatientAllergiesChange: (String) -> Unit,
     onPatientConditionsChange: (String) -> Unit,
     onSavePatient: () -> Unit,
-    onStartInvoice: (String?) -> Unit,
-    onStartMedicalRecord: (String?) -> Unit
+    onStartInvoice: (String?) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -466,11 +515,18 @@ private fun MainContent(
                 onVeterinarianChange = onAppointmentVeterinarianChange,
                 onSave = onSaveAppointment
             )
-            DesktopSection.MEDICAL_RECORDS -> PlaceholderWorkflowPanel(
-                title = "Medical Records",
-                body = "Create and edit clinical notes using the MedicalRecordFormViewModel.",
-                actionLabel = "New medical record",
-                onAction = { onStartMedicalRecord(null) }
+            DesktopSection.MEDICAL_RECORDS -> MedicalRecordWorkspacePanel(
+                mode = navigationState.activeMedicalRecordMode,
+                state = medicalRecordFormState,
+                onStartCreate = { onStartMedicalRecord(navigationState.selectedPatientId) },
+                onPatientIdChange = onMedicalRecordPatientIdChange,
+                onAppointmentIdChange = onMedicalRecordAppointmentIdChange,
+                onDiagnosisChange = onMedicalRecordDiagnosisChange,
+                onTreatmentChange = onMedicalRecordTreatmentChange,
+                onNotesChange = onMedicalRecordNotesChange,
+                onRecordedAtChange = onMedicalRecordRecordedAtChange,
+                onVeterinarianChange = onMedicalRecordVeterinarianChange,
+                onSave = onSaveMedicalRecord
             )
             DesktopSection.BILLING -> PlaceholderWorkflowPanel(
                 title = "Billing & Checkout",
