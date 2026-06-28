@@ -155,6 +155,13 @@ fun DarcyVetDesktopApp() {
         refreshNavigation()
     }
 
+    fun openInvoice(invoiceId: String, patientId: String?) {
+        runtime.billingCheckoutViewModel.loadInvoice(invoiceId)
+        refreshBillingCheckout()
+        runtime.navigationViewModel.openInvoice(invoiceId, patientId)
+        refreshNavigation()
+    }
+
     LaunchedEffect(Unit) {
         loadDashboard()
         loadAppointmentBoard()
@@ -310,6 +317,7 @@ fun DarcyVetDesktopApp() {
                         refreshMedicalRecordForm()
                     },
                     onStartInvoice = ::startInvoice,
+                    onOpenInvoice = ::openInvoice,
                     onBillingPatientIdChange = { value ->
                         runtime.billingCheckoutViewModel.updatePatientId(value)
                         refreshBillingCheckout()
@@ -543,6 +551,7 @@ private fun MainContent(
     onMedicalRecordVeterinarianChange: (String) -> Unit,
     onSaveMedicalRecord: () -> Unit,
     onStartInvoice: (String?) -> Unit,
+    onOpenInvoice: (String, String?) -> Unit,
     onBillingPatientIdChange: (String) -> Unit,
     onBillingIssuedAtChange: (String) -> Unit,
     onBillingToggleService: (ClinicService) -> Unit,
@@ -616,7 +625,8 @@ private fun MainContent(
                 onSavePatient = onSavePatient,
                 onScheduleAppointment = onStartAppointment,
                 onStartMedicalRecord = onStartMedicalRecord,
-                onStartInvoice = onStartInvoice
+                onStartInvoice = onStartInvoice,
+                onOpenInvoice = onOpenInvoice
             )
             DesktopSection.APPOINTMENTS -> AppointmentWorkspacePanel(
                 boardState = appointmentBoardState,
