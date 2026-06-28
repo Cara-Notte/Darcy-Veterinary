@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import darcy.veterinary.domain.model.ClinicService
+import darcy.veterinary.domain.model.PaymentStatus
 import darcy.veterinary.presentation.desktop.theme.DarcyColor
 import darcy.veterinary.presentation.desktop.viewmodel.BillingCheckoutAction
 import darcy.veterinary.presentation.desktop.viewmodel.BillingCheckoutField
@@ -106,7 +107,7 @@ private fun BillingCheckoutPanel(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 MetricCard("Total", formatMoney(state.total), Modifier.weight(1f))
-                MetricCard("Status", state.paymentStatus?.name ?: "Draft", Modifier.weight(1f))
+                MetricCard("Status", formatPaymentStatus(state.paymentStatus), Modifier.weight(1f))
                 MetricCard("Services", state.selectedServices.size.toString(), Modifier.weight(1f))
             }
             state.errorMessage?.let { ErrorState(it) }
@@ -116,13 +117,40 @@ private fun BillingCheckoutPanel(
                 onConfirmPendingAction = onConfirmPendingAction,
                 onDismissPendingAction = onDismissPendingAction
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(onClick = onCreateInvoice, enabled = state.canAttemptSave) { Text("Create invoice") }
-                Button(onClick = onRequestMarkPaid, enabled = state.hasInvoice && state.canAttemptSave) { Text("Mark paid") }
-                Button(onClick = onRequestVoid, enabled = state.hasInvoice && state.canAttemptSave) { Text("Void invoice") }
-            }
+            BillingActionRow(
+                state = state,
+                onCreateInvoice = onCreateInvoice,
+                onRequestMarkPaid = onRequestMarkPaid,
+                onRequestVoid = onRequestVoid
+            )
         }
     }
+}
+
+@Composable
+private fun BillingActionRow(
+    state: BillingCheckoutState,
+    onCreateInvoice: () -> Unit,
+    onRequestMarkPaid: () -> Unit,
+    onRequestVoid: () -> Unit
+) {
+    val canCreateInvoice = !state.hasInvoice && state.canAttemptSave
+    val canUpdateUnpaidInvoice = state.paymentStatus == PaymentStatus.UNPAID && state.canAttemptSave
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = onCreateInvoice, enabled = canCreateInvoice) { Text("Create invoice") }
+            Button(onClick = onRequestMarkPaid, enabled = canUpdateUnpaidInvoice) { Text("Mark paid") }
+            Button(onClick = onRequestVoid, enabled = canUpdateUnpaidInvoice) { Text("Void invoice") }
+        }
+        billingActionHint(state)?.let { MutedText(it) }
+    }
+}
+
+private fun billingActionHint(state: BillingCheckoutState): String? = when (state.paymentStatus) {
+    PaymentStatus.PAID -> "Paid invoices are locked against voiding."
+    PaymentStatus.VOIDED -> "Voided invoices cannot be marked as paid."
+    PaymentStatus.UNPAID -> "Unpaid invoices can be marked paid or voided after confirmation."
+    null -> if (state.hasInvoice) "Loaded invoice status is unavailable." else "Draft invoice can be created after patient and services are filled."
 }
 
 @Composable
@@ -167,7 +195,7 @@ private fun PendingActionPrompt(
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Confirm action", fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
-            MutedText("Confirm to $label. Total: ${formatMoney(pending.total)}. Current status: ${pending.paymentStatus ?: "unknown"}.")
+            MutedText("Confirm to $label. Total: ${formatMoney(pending.total)}. Current status: ${formatPaymentStatus(pending.paymentStatus)}.")
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = onConfirmPendingAction, enabled = state.canAttemptSave) { Text("Confirm") }
                 TextButton(onClick = onDismissPendingAction) { Text("Cancel") }
@@ -196,5 +224,8 @@ private fun BillingTextField(
         error?.let { Text(it, color = DarcyColor.SemanticRed, style = MaterialTheme.typography.caption) }
     }
 }
+
+private fun formatPaymentStatus(status: PaymentStatus?): String =
+    status?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "Draft"
 
 private fun formatMoney(value: Double): String = "Rp %,.0f".format(value)
