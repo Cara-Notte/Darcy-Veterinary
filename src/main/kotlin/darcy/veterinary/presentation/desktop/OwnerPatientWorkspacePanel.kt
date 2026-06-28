@@ -58,7 +58,8 @@ internal fun OwnerPatientWorkspacePanel(
     onSavePatient: () -> Unit,
     onScheduleAppointment: (String?) -> Unit,
     onStartMedicalRecord: (String?) -> Unit,
-    onStartInvoice: (String?) -> Unit
+    onStartInvoice: (String?) -> Unit,
+    onOpenInvoice: (String, String?) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -106,7 +107,8 @@ internal fun OwnerPatientWorkspacePanel(
             onClearPatientChart = onClearPatientChart,
             onScheduleAppointment = onScheduleAppointment,
             onStartMedicalRecord = onStartMedicalRecord,
-            onStartInvoice = onStartInvoice
+            onStartInvoice = onStartInvoice,
+            onOpenInvoice = onOpenInvoice
         )
         SearchResultsPanel(
             state = state,
@@ -182,7 +184,8 @@ private fun PatientChartPanel(
     onClearPatientChart: () -> Unit,
     onScheduleAppointment: (String?) -> Unit,
     onStartMedicalRecord: (String?) -> Unit,
-    onStartInvoice: (String?) -> Unit
+    onStartInvoice: (String?) -> Unit,
+    onOpenInvoice: (String, String?) -> Unit
 ) {
     if (chart == null) return
 
@@ -206,7 +209,9 @@ private fun PatientChartPanel(
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 TimelinePanel("Appointments", chart.appointments, Modifier.weight(1f)) { AppointmentTimelineItem(it) }
                 TimelinePanel("Records", chart.records, Modifier.weight(1f)) { RecordTimelineItem(it) }
-                TimelinePanel("Invoices", chart.invoices, Modifier.weight(1f)) { InvoiceTimelineItem(it) }
+                TimelinePanel("Invoices", chart.invoices, Modifier.weight(1f)) { invoice ->
+                    InvoiceTimelineItem(invoice) { onOpenInvoice(invoice.id, chart.patient.id) }
+                }
             }
         }
     }
@@ -261,9 +266,10 @@ private fun RecordTimelineItem(row: RecordTimelineRow) {
 }
 
 @Composable
-private fun InvoiceTimelineItem(row: InvoiceTimelineRow) {
+private fun InvoiceTimelineItem(row: InvoiceTimelineRow, onOpenInvoice: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(row.issuedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
         MutedText("${row.paymentStatus} • ${row.total}")
+        TextButton(onClick = onOpenInvoice) { Text("Open invoice") }
     }
 }
