@@ -65,7 +65,7 @@ private fun RevenueAndBillingPanel(report: ClinicOverviewReport) {
                 color = DarcyColor.TextPrimary
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                MetricCard("Paid revenue", formatReportMoney(report.paidRevenue), Modifier.weight(1f))
+                MetricCard("Paid revenue", formatCurrency(report.paidRevenue), Modifier.weight(1f))
                 MetricCard("Paid invoices", report.paidInvoices.toString(), Modifier.weight(1f))
                 MetricCard("Unpaid invoices", report.unpaidInvoices.toString(), Modifier.weight(1f))
                 MetricCard("Voided", report.voidedInvoices.toString(), Modifier.weight(1f))
@@ -92,5 +92,3 @@ private fun AppointmentStatusPanel(report: ClinicOverviewReport) {
         }
     }
 }
-
-private fun formatReportMoney(value: Double): String = "Rp %,.0f".format(value)

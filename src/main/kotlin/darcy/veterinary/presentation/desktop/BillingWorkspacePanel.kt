@@ -106,8 +106,8 @@ private fun BillingCheckoutPanel(
                 error = state.fieldErrors[BillingCheckoutField.SERVICES]
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                MetricCard("Total", formatMoney(state.total), Modifier.weight(1f))
-                MetricCard("Status", formatPaymentStatus(state.paymentStatus), Modifier.weight(1f))
+                MetricCard("Total", formatCurrency(state.total), Modifier.weight(1f))
+                MetricCard("Status", formatEnumLabel(state.paymentStatus), Modifier.weight(1f))
                 MetricCard("Services", state.selectedServices.size.toString(), Modifier.weight(1f))
             }
             state.errorMessage?.let { ErrorState(it) }
@@ -167,9 +167,9 @@ private fun ServiceSelector(
             TextButton(onClick = { onToggleService(service) }) {
                 Text(
                     text = if (selected) {
-                        "• ${service.displayName} — ${formatMoney(service.defaultCost)}"
+                        "• ${service.displayName} — ${formatCurrency(service.defaultCost)}"
                     } else {
-                        "${service.displayName} — ${formatMoney(service.defaultCost)}"
+                        "${service.displayName} — ${formatCurrency(service.defaultCost)}"
                     },
                     color = if (selected) DarcyColor.ClinicalAmber else DarcyColor.TextSecondary,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
@@ -195,7 +195,7 @@ private fun PendingActionPrompt(
     GlassCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Confirm action", fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
-            MutedText("Confirm to $label. Total: ${formatMoney(pending.total)}. Current status: ${formatPaymentStatus(pending.paymentStatus)}.")
+            MutedText("Confirm to $label. Total: ${formatCurrency(pending.total)}. Current status: ${formatEnumLabel(pending.paymentStatus)}.")
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Button(onClick = onConfirmPendingAction, enabled = state.canAttemptSave) { Text("Confirm") }
                 TextButton(onClick = onDismissPendingAction) { Text("Cancel") }
@@ -224,8 +224,3 @@ private fun BillingTextField(
         error?.let { Text(it, color = DarcyColor.SemanticRed, style = MaterialTheme.typography.caption) }
     }
 }
-
-private fun formatPaymentStatus(status: PaymentStatus?): String =
-    status?.name?.lowercase()?.replaceFirstChar { it.uppercase() } ?: "Draft"
-
-private fun formatMoney(value: Double): String = "Rp %,.0f".format(value)
