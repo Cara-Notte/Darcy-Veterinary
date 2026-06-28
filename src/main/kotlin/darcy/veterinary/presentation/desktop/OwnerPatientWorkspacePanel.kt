@@ -58,6 +58,7 @@ internal fun OwnerPatientWorkspacePanel(
     onSavePatient: () -> Unit,
     onScheduleAppointment: (String?) -> Unit,
     onStartMedicalRecord: (String?) -> Unit,
+    onOpenMedicalRecord: (String, String?) -> Unit,
     onStartInvoice: (String?) -> Unit,
     onOpenInvoice: (String, String?) -> Unit
 ) {
@@ -107,6 +108,7 @@ internal fun OwnerPatientWorkspacePanel(
             onClearPatientChart = onClearPatientChart,
             onScheduleAppointment = onScheduleAppointment,
             onStartMedicalRecord = onStartMedicalRecord,
+            onOpenMedicalRecord = onOpenMedicalRecord,
             onStartInvoice = onStartInvoice,
             onOpenInvoice = onOpenInvoice
         )
@@ -184,6 +186,7 @@ private fun PatientChartPanel(
     onClearPatientChart: () -> Unit,
     onScheduleAppointment: (String?) -> Unit,
     onStartMedicalRecord: (String?) -> Unit,
+    onOpenMedicalRecord: (String, String?) -> Unit,
     onStartInvoice: (String?) -> Unit,
     onOpenInvoice: (String, String?) -> Unit
 ) {
@@ -208,7 +211,9 @@ private fun PatientChartPanel(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 TimelinePanel("Appointments", chart.appointments, Modifier.weight(1f)) { AppointmentTimelineItem(it) }
-                TimelinePanel("Records", chart.records, Modifier.weight(1f)) { RecordTimelineItem(it) }
+                TimelinePanel("Records", chart.records, Modifier.weight(1f)) { record ->
+                    RecordTimelineItem(record) { onOpenMedicalRecord(record.id, chart.patient.id) }
+                }
                 TimelinePanel("Invoices", chart.invoices, Modifier.weight(1f)) { invoice ->
                     InvoiceTimelineItem(invoice) { onOpenInvoice(invoice.id, chart.patient.id) }
                 }
@@ -257,11 +262,12 @@ private fun AppointmentTimelineItem(row: AppointmentTimelineRow) {
 }
 
 @Composable
-private fun RecordTimelineItem(row: RecordTimelineRow) {
+private fun RecordTimelineItem(row: RecordTimelineRow, onOpenMedicalRecord: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(row.recordedAt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")), fontWeight = FontWeight.Bold, color = DarcyColor.TextPrimary)
         MutedText("Diagnosis: ${row.diagnosis}")
         MutedText("Treatment: ${row.treatment}")
+        TextButton(onClick = onOpenMedicalRecord) { Text("Open record") }
     }
 }
 
