@@ -40,6 +40,7 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
 import darcy.veterinary.application.ClinicOverviewReport
+import darcy.veterinary.domain.model.AppointmentStatus
 import darcy.veterinary.domain.model.ClinicService
 import darcy.veterinary.domain.model.PetSex
 import darcy.veterinary.domain.model.VisitType
@@ -56,6 +57,7 @@ import darcy.veterinary.presentation.desktop.viewmodel.MedicalRecordFormState
 import darcy.veterinary.presentation.desktop.viewmodel.OwnerFormState
 import darcy.veterinary.presentation.desktop.viewmodel.PatientFormState
 import darcy.veterinary.presentation.desktop.viewmodel.PatientSearchState
+import java.time.LocalDate
 
 private val LargeGlassShape = RoundedCornerShape(28.dp)
 private val MediumGlassShape = RoundedCornerShape(20.dp)
@@ -217,6 +219,14 @@ fun DarcyVetDesktopApp() {
                     adminMaintenanceState = adminMaintenanceState,
                     onRefreshDashboard = ::loadDashboard,
                     onRefreshAppointments = ::loadAppointmentBoard,
+                    onSelectAppointmentDate = { date ->
+                        runtime.appointmentBoardViewModel.selectDate(date)
+                        refreshAppointmentBoard()
+                    },
+                    onApplyAppointmentStatusFilter = { status ->
+                        runtime.appointmentBoardViewModel.applyStatusFilter(status)
+                        refreshAppointmentBoard()
+                    },
                     onStartAppointment = ::startAppointment,
                     onLoadAppointment = { appointmentId ->
                         runtime.appointmentFormViewModel.load(appointmentId)
@@ -509,6 +519,8 @@ private fun MainContent(
     adminMaintenanceState: AdminMaintenanceState,
     onRefreshDashboard: () -> Unit,
     onRefreshAppointments: () -> Unit,
+    onSelectAppointmentDate: (LocalDate) -> Unit,
+    onApplyAppointmentStatusFilter: (AppointmentStatus?) -> Unit,
     onStartAppointment: (String?) -> Unit,
     onLoadAppointment: (String) -> Unit,
     onRequestCompleteAppointment: (String) -> Unit,
@@ -610,6 +622,8 @@ private fun MainContent(
                 boardState = appointmentBoardState,
                 formState = appointmentFormState,
                 onRefresh = onRefreshAppointments,
+                onSelectDate = onSelectAppointmentDate,
+                onApplyStatusFilter = onApplyAppointmentStatusFilter,
                 onStartCreate = onStartAppointment,
                 onLoadAppointment = onLoadAppointment,
                 onRequestComplete = onRequestCompleteAppointment,
